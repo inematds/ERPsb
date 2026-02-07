@@ -62,7 +62,13 @@ model Tenant {
   document            String?
   type                String       @default("INFORMAL")
   plan                String       @default("FREE")
+  businessType        String?
+  monthlyRevenue      String?
   onboardingCompleted Boolean      @default(false)
+  address             Json?
+  phone               String?
+  email               String?
+  logo                String?
   users               UserTenant[]
   createdAt           DateTime     @default(now())
   updatedAt           DateTime     @updatedAt
