@@ -7,27 +7,40 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Semaforo } from '@/components/dashboard/semaforo';
 import { CashFlowChart } from '@/components/dashboard/cash-flow-chart';
+import { AlertCards } from '@/components/dashboard/alert-cards';
+import { WithdrawalCard } from '@/components/dashboard/withdrawal-card';
+import { MonthlySummary } from '@/components/dashboard/monthly-summary';
 import { DashboardSkeleton } from '@/components/shared/loading-skeleton';
 import { formatCurrency } from '@/lib/formatters';
 import type { DashboardData } from '@/modules/financeiro/dashboard.service';
+import type { AlertasData } from '@/modules/financeiro/alerta.service';
 
 export default function DashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null);
+  const [alertasData, setAlertasData] = useState<AlertasData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchDashboard() {
+    async function fetchAll() {
       try {
-        const res = await fetch('/api/v1/dashboard');
-        if (res.ok) {
-          const json = await res.json();
+        const [dashRes, alertRes] = await Promise.all([
+          fetch('/api/v1/dashboard'),
+          fetch('/api/v1/alertas'),
+        ]);
+
+        if (dashRes.ok) {
+          const json = await dashRes.json();
           setData(json.data);
+        }
+        if (alertRes.ok) {
+          const json = await alertRes.json();
+          setAlertasData(json.data);
         }
       } finally {
         setLoading(false);
       }
     }
-    fetchDashboard();
+    fetchAll();
   }, []);
 
   if (loading) {
@@ -52,6 +65,11 @@ export default function DashboardPage() {
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">Dashboard</h1>
 
+      {/* Alertas proativos */}
+      {alertasData && alertasData.alertas.length > 0 && (
+        <AlertCards alertas={alertasData.alertas} />
+      )}
+
       {/* Semaforo + Saldo */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Semaforo level={data.semaforo.level} diasCobertura={data.semaforo.diasCobertura} />
@@ -64,6 +82,17 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Quanto posso retirar + Resumo mensal */}
+      {alertasData && (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <WithdrawalCard amount={alertasData.quantoPossoRetirar} saldo={data.saldo} />
+          <MonthlySummary
+            receitas={alertasData.resumoMensal.receitas}
+            despesas={alertasData.resumoMensal.despesas}
+          />
+        </div>
+      )}
 
       {/* Resumo: Hoje / Semana / Mes */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
