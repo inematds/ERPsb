@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { TrendingUp, TrendingDown, ArrowRight } from 'lucide-react';
+import { TrendingUp, TrendingDown, ArrowRight, AlertCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Semaforo } from '@/components/dashboard/semaforo';
@@ -11,7 +11,9 @@ import { AlertCards } from '@/components/dashboard/alert-cards';
 import { WithdrawalCard } from '@/components/dashboard/withdrawal-card';
 import { MonthlySummary } from '@/components/dashboard/monthly-summary';
 import { DashboardSkeleton } from '@/components/shared/loading-skeleton';
+import { EmptyState } from '@/components/shared/empty-state';
 import { formatCurrency } from '@/lib/formatters';
+import { toast } from 'sonner';
 import type { DashboardData } from '@/modules/financeiro/dashboard.service';
 import type { AlertasData } from '@/modules/financeiro/alerta.service';
 
@@ -31,11 +33,15 @@ export default function DashboardPage() {
         if (dashRes.ok) {
           const json = await dashRes.json();
           setData(json.data);
+        } else {
+          toast.error('Erro ao carregar dashboard');
         }
         if (alertRes.ok) {
           const json = await alertRes.json();
           setAlertasData(json.data);
         }
+      } catch {
+        toast.error('Erro ao carregar dados');
       } finally {
         setLoading(false);
       }
@@ -56,7 +62,11 @@ export default function DashboardPage() {
     return (
       <div className="space-y-6">
         <h1 className="text-2xl font-bold">Dashboard</h1>
-        <p className="text-muted-foreground">Erro ao carregar dados do dashboard.</p>
+        <EmptyState
+          icon={AlertCircle}
+          title="Erro ao carregar dados"
+          description="Nao foi possivel carregar o dashboard. Tente recarregar a pagina."
+        />
       </div>
     );
   }

@@ -40,7 +40,11 @@ export default function EstoquePage() {
       if (res.ok) {
         const json = await res.json();
         setSaldos(json.data ?? []);
+      } else {
+        toast.error('Erro ao carregar estoque');
       }
+    } catch {
+      toast.error('Erro ao carregar estoque');
     } finally {
       setLoading(false);
     }

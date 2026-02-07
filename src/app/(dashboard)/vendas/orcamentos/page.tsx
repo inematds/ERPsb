@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { EmptyState } from '@/components/shared/empty-state';
 import { ListSkeleton } from '@/components/shared/loading-skeleton';
 import { formatCurrency } from '@/lib/formatters';
+import { toast } from 'sonner';
 
 interface Orcamento {
   id: string;
@@ -66,7 +67,11 @@ export default function OrcamentosPage() {
         const json = await res.json();
         setOrcamentos(json.data);
         setMeta(json.meta);
+      } else {
+        toast.error('Erro ao carregar orcamentos');
       }
+    } catch {
+      toast.error('Erro ao carregar orcamentos');
     } finally {
       setLoading(false);
     }

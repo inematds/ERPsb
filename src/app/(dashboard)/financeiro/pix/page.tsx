@@ -2,13 +2,14 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { QrCode, ChevronLeft, ChevronRight } from 'lucide-react';
+import { QrCode, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { EmptyState } from '@/components/shared/empty-state';
 import { ListSkeleton } from '@/components/shared/loading-skeleton';
 import { formatCurrency } from '@/lib/formatters';
+import { toast } from 'sonner';
 
 interface PixCharge {
   id: string;
@@ -88,7 +89,11 @@ export default function PixChargesPage() {
           const json = await res.json();
           setCharges(json.data);
           setMeta(json.meta);
+        } else {
+          toast.error('Erro ao carregar cobrancas PIX');
         }
+      } catch {
+        toast.error('Erro ao carregar cobrancas PIX');
       } finally {
         setIsLoading(false);
       }
@@ -142,9 +147,11 @@ export default function PixChargesPage() {
           {isLoading ? (
             <ListSkeleton />
           ) : charges.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              Nenhuma cobranca encontrada
-            </div>
+            <EmptyState
+              icon={Search}
+              title="Nenhuma cobranca encontrada"
+              description="Altere os filtros para ver outras cobrancas."
+            />
           ) : (
             <div className="space-y-2">
               {charges.map((charge) => (

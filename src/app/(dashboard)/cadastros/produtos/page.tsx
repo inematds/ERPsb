@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { EmptyState } from '@/components/shared/empty-state';
 import { ListSkeleton } from '@/components/shared/loading-skeleton';
 import { formatCurrency } from '@/lib/formatters';
+import { toast } from 'sonner';
 
 interface Produto {
   id: string;
@@ -47,7 +48,11 @@ export default function ProdutosPage() {
         const json = await res.json();
         setProdutos(json.data);
         setMeta(json.meta);
+      } else {
+        toast.error('Erro ao carregar produtos');
       }
+    } catch {
+      toast.error('Erro ao carregar produtos');
     } finally {
       setIsLoading(false);
     }
@@ -117,9 +122,11 @@ export default function ProdutosPage() {
           {isLoading ? (
             <ListSkeleton />
           ) : produtos.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              Nenhum item encontrado
-            </div>
+            <EmptyState
+              icon={Search}
+              title="Nenhum item encontrado"
+              description="Tente buscar com outros termos ou limpe os filtros."
+            />
           ) : (
             <div className="space-y-2">
               {produtos.map((p) => (

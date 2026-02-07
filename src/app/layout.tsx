@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -13,7 +14,10 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ERPsb - ERP para Pequenas Empresas",
+  title: {
+    default: "ERPsb - ERP para Pequenas Empresas",
+    template: "%s | ERPsb",
+  },
   description: "ERP simples e completo para micro e pequenas empresas brasileiras",
   manifest: "/manifest.json",
   themeColor: "#0f172a",
@@ -21,6 +25,12 @@ export const metadata: Metadata = {
     capable: true,
     statusBarStyle: "default",
     title: "ERPsb",
+  },
+  openGraph: {
+    title: "ERPsb - ERP para Pequenas Empresas",
+    description: "ERP simples e completo para micro e pequenas empresas brasileiras",
+    type: "website",
+    locale: "pt_BR",
   },
 };
 
@@ -30,11 +40,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="pt-BR">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {children}
+        <Toaster position="top-center" richColors />
       </body>
     </html>
   );

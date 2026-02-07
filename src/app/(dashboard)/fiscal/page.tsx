@@ -91,7 +91,11 @@ export default function NotasFiscaisPage() {
         const json = await res.json();
         setNotas(json.data ?? []);
         setMeta(json.meta ?? { total: 0, page: 1, pageSize: 20 });
+      } else {
+        toast.error('Erro ao carregar notas fiscais');
       }
+    } catch {
+      toast.error('Erro ao carregar notas fiscais');
     } finally {
       setLoading(false);
     }

@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { EmptyState } from '@/components/shared/empty-state';
 import { ListSkeleton } from '@/components/shared/loading-skeleton';
 import { formatCurrency } from '@/lib/formatters';
+import { toast } from 'sonner';
 
 interface Venda {
   id: string;
@@ -60,7 +61,11 @@ export default function VendasPage() {
         const json = await res.json();
         setVendas(json.data);
         setMeta(json.meta);
+      } else {
+        toast.error('Erro ao carregar vendas');
       }
+    } catch {
+      toast.error('Erro ao carregar vendas');
     } finally {
       setLoading(false);
     }

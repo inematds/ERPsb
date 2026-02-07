@@ -99,7 +99,11 @@ export default function ContasReceberPage() {
             .filter((c: ContaReceber) => c.status === 'PENDENTE' || c.status === 'VENCIDO')
             .reduce((sum: number, c: ContaReceber) => sum + c.amount, 0);
           setTotalPendente(pending);
+        } else {
+          toast.error('Erro ao carregar contas a receber');
         }
+      } catch {
+        toast.error('Erro ao carregar contas a receber');
       } finally {
         setIsLoading(false);
       }
@@ -204,9 +208,11 @@ export default function ContasReceberPage() {
           {isLoading ? (
             <ListSkeleton />
           ) : contas.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              Nenhuma conta encontrada
-            </div>
+            <EmptyState
+              icon={Search}
+              title="Nenhuma conta encontrada"
+              description="Tente buscar com outros termos ou altere os filtros."
+            />
           ) : (
             <div className="space-y-2">
               {contas.map((conta) => (

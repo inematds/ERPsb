@@ -9,6 +9,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { EmptyState } from '@/components/shared/empty-state';
 import { ListSkeleton } from '@/components/shared/loading-skeleton';
+import { toast } from 'sonner';
 
 interface Fornecedor {
   id: string;
@@ -43,7 +44,11 @@ export default function FornecedoresPage() {
         const json = await res.json();
         setFornecedores(json.data);
         setMeta(json.meta);
+      } else {
+        toast.error('Erro ao carregar fornecedores');
       }
+    } catch {
+      toast.error('Erro ao carregar fornecedores');
     } finally {
       setIsLoading(false);
     }
@@ -100,9 +105,11 @@ export default function FornecedoresPage() {
           {isLoading ? (
             <ListSkeleton />
           ) : fornecedores.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              Nenhum fornecedor encontrado para &quot;{search}&quot;
-            </div>
+            <EmptyState
+              icon={Search}
+              title="Nenhum fornecedor encontrado"
+              description="Tente buscar com outros termos."
+            />
           ) : (
             <div className="space-y-2">
               {fornecedores.map((f) => (
