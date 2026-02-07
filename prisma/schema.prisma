@@ -80,6 +80,8 @@ model Tenant {
   orcamentos          Orcamento[]
   pixCharges          PixCharge[]
   notifications       Notification[]
+  configFiscal        ConfigFiscal?
+  notasFiscais        NotaFiscal[]
   createdAt           DateTime     @default(now())
   updatedAt           DateTime     @updatedAt
 
@@ -250,6 +252,7 @@ model Venda {
   paymentMethod   FormaPagamento  @relation(fields: [paymentMethodId], references: [id])
   contasReceber   ContaReceber[]
   orcamentos      Orcamento[]
+  notasFiscais    NotaFiscal[]
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
 
@@ -335,4 +338,55 @@ model Notification {
 
   @@index([tenantId, read])
   @@map("notifications")
+}
+
+// ==================== FISCAL ====================
+
+model ConfigFiscal {
+  id                 String    @id @default(cuid())
+  tenantId           String    @unique
+  regimeTributario   String?
+  inscricaoEstadual  String?
+  inscricaoMunicipal String?
+  certificateData    String?
+  certificatePassword String?
+  certificateExpiry  DateTime?
+  ambiente           String    @default("homologacao")
+  serieNFe           Int       @default(1)
+  serieNFSe          Int       @default(1)
+  serieNFCe          Int       @default(1)
+  ultimoNumeroNFe    Int       @default(0)
+  ultimoNumeroNFSe   Int       @default(0)
+  ultimoNumeroNFCe   Int       @default(0)
+  tenant             Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  @@map("config_fiscal")
+}
+
+model NotaFiscal {
+  id                  String    @id @default(cuid())
+  tenantId            String
+  type                String
+  saleId              String?
+  numero              Int?
+  serie               Int?
+  chaveAcesso         String?
+  xmlContent          String?
+  pdfUrl              String?
+  status              String    @default("PROCESSANDO")
+  focusNfeId          String?
+  errorMessage        String?
+  emitidaEm           DateTime?
+  canceladaEm         DateTime?
+  motivoCancelamento  String?
+  dadosNota           Json
+  tenant              Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  sale                Venda?    @relation(fields: [saleId], references: [id])
+  createdAt           DateTime  @default(now())
+
+  @@index([tenantId, type, status])
+  @@index([saleId])
+  @@map("notas_fiscais")
 }

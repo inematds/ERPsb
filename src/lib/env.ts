@@ -12,6 +12,7 @@ const envSchema = z.object({
   SENTRY_PROJECT: z.string().optional(),
   MERCADO_PAGO_ACCESS_TOKEN: z.string().optional(),
   MERCADO_PAGO_WEBHOOK_SECRET: z.string().optional(),
+  FOCUS_NFE_TOKEN: z.string().optional(),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
 });
 
