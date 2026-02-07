@@ -5,6 +5,8 @@ import { Header } from '@/components/layout/header';
 import { BottomNav } from '@/components/layout/bottom-nav';
 import { Sidebar } from '@/components/layout/sidebar';
 import { Fab } from '@/components/layout/fab';
+import { OfflineBanner } from '@/components/shared/offline-banner';
+import { InstallBanner } from '@/components/shared/install-banner';
 
 export default async function DashboardLayout({
   children,
@@ -20,6 +22,8 @@ export default async function DashboardLayout({
   return (
     <SessionProvider session={session}>
       <div className="min-h-screen bg-background">
+        <OfflineBanner />
+        <InstallBanner />
         <Sidebar />
         <Header />
         <main className="pb-20 lg:pb-0 lg:pl-60">
