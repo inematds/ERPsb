@@ -135,6 +135,99 @@ export async function cancelNFe(
   return response.json();
 }
 
+// ==================== NFSe ====================
+
+function getMockNFSeCreateResponse(ref: string): FocusNFeMockResponse {
+  return {
+    mock: true,
+    status: 'autorizado',
+    numero: '1',
+    caminho_xml_nota_fiscal: `/mock/xml/nfse-${ref}.xml`,
+    caminho_danfe: `/mock/danfe/nfse-${ref}.pdf`,
+  };
+}
+
+export async function createNFSe(
+  ref: string,
+  nfseData: Record<string, unknown>,
+  ambiente: string = 'homologacao',
+): Promise<FocusNFeResponse> {
+  const token = env.FOCUS_NFE_TOKEN;
+
+  if (!token) {
+    return getMockNFSeCreateResponse(ref);
+  }
+
+  const baseUrl = getBaseUrl(ambiente);
+  const response = await fetch(`${baseUrl}/nfse?ref=${encodeURIComponent(ref)}`, {
+    method: 'POST',
+    headers: {
+      'Authorization': getAuthHeader(),
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(nfseData),
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`Focus NFe API error (NFSe): ${response.status} - ${error}`);
+  }
+
+  return response.json();
+}
+
+export async function getNFSeStatus(
+  ref: string,
+  ambiente: string = 'homologacao',
+): Promise<FocusNFeResponse> {
+  const token = env.FOCUS_NFE_TOKEN;
+
+  if (!token) {
+    return getMockNFSeCreateResponse(ref);
+  }
+
+  const baseUrl = getBaseUrl(ambiente);
+  const response = await fetch(`${baseUrl}/nfse/${encodeURIComponent(ref)}`, {
+    headers: { 'Authorization': getAuthHeader() },
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`Focus NFe API error (NFSe): ${response.status} - ${error}`);
+  }
+
+  return response.json();
+}
+
+export async function cancelNFSe(
+  ref: string,
+  motivo: string,
+  ambiente: string = 'homologacao',
+): Promise<FocusNFeResponse> {
+  const token = env.FOCUS_NFE_TOKEN;
+
+  if (!token) {
+    return { status: 'cancelado', mensagem_sefaz: 'Cancelamento NFSe autorizado (MOCK)' };
+  }
+
+  const baseUrl = getBaseUrl(ambiente);
+  const response = await fetch(`${baseUrl}/nfse/${encodeURIComponent(ref)}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': getAuthHeader(),
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ justificativa: motivo }),
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`Focus NFe API error (NFSe): ${response.status} - ${error}`);
+  }
+
+  return response.json();
+}
+
 export function mapFocusStatus(status: string): 'PROCESSANDO' | 'AUTORIZADA' | 'REJEITADA' | 'CANCELADA' {
   switch (status) {
     case 'autorizado':

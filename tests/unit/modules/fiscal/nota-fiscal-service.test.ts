@@ -51,6 +51,17 @@ vi.mock('@/integrations/fiscal-api/focusnfe.client', () => ({
     caminho_danfe: '/danfe/test.pdf',
   }),
   cancelNFe: vi.fn().mockResolvedValue({ status: 'cancelado' }),
+  createNFSe: vi.fn().mockResolvedValue({
+    status: 'autorizado',
+    caminho_xml_nota_fiscal: '/xml/nfse-test.xml',
+    caminho_danfe: '/danfe/nfse-test.pdf',
+  }),
+  getNFSeStatus: vi.fn().mockResolvedValue({
+    status: 'autorizado',
+    caminho_xml_nota_fiscal: '/xml/nfse-test.xml',
+    caminho_danfe: '/danfe/nfse-test.pdf',
+  }),
+  cancelNFSe: vi.fn().mockResolvedValue({ status: 'cancelado' }),
   mapFocusStatus: vi.fn((s: string) => {
     if (s === 'autorizado') return 'AUTORIZADA';
     if (s === 'cancelado') return 'CANCELADA';
@@ -58,7 +69,7 @@ vi.mock('@/integrations/fiscal-api/focusnfe.client', () => ({
   }),
 }));
 
-import { emitirNFe, listNotasFiscais, checkNotaStatus, cancelarNota } from '@/modules/fiscal/nota-fiscal.service';
+import { emitirNFe, emitirNFSe, listNotasFiscais, checkNotaStatus, cancelarNota } from '@/modules/fiscal/nota-fiscal.service';
 
 describe('Nota Fiscal Service', () => {
   beforeEach(() => {
@@ -124,6 +135,47 @@ describe('Nota Fiscal Service', () => {
       mockNotaFiscalFindFirst.mockResolvedValueOnce({ id: 'nf-existing' });
 
       await expect(emitirNFe('t1', 's1')).rejects.toThrow('Ja existe uma NFe para esta venda');
+    });
+  });
+
+  describe('emitirNFSe', () => {
+    it('should create and emit NFSe successfully', async () => {
+      mockVendaFindUnique.mockResolvedValueOnce({
+        id: 's1', tenantId: 't1', status: 'CONFIRMADA',
+        items: [{ productId: 'p1', name: 'Servico Consultoria', quantity: 1, unitPrice: 10000, total: 10000 }],
+        subtotal: 10000, discount: 0, total: 10000,
+        client: { name: 'Maria', document: '98765432100', email: 'maria@test.com' },
+        paymentMethod: { name: 'PIX', type: 'PIX' },
+      });
+      mockNotaFiscalFindFirst.mockResolvedValueOnce(null);
+      mockConfigFiscalFindUnique.mockResolvedValueOnce({
+        regimeTributario: 'SIMPLES_NACIONAL', serieNFSe: 1, inscricaoMunicipal: '456', ambiente: 'homologacao',
+      });
+      mockTenantFindUnique.mockResolvedValueOnce({
+        id: 't1', name: 'Empresa Test', document: '00000000000100', phone: null, email: null,
+      });
+      mockConfigFiscalUpsert.mockResolvedValueOnce({ ultimoNumeroNFSe: 1 });
+      mockNotaFiscalCreate.mockResolvedValueOnce({ id: 'nf1', status: 'PROCESSANDO', type: 'NFSE' });
+      mockNotaFiscalUpdate.mockResolvedValueOnce({ id: 'nf1', status: 'AUTORIZADA', type: 'NFSE' });
+
+      const result = await emitirNFSe('t1', 's1');
+      expect(result.status).toBe('AUTORIZADA');
+      expect(result.type).toBe('NFSE');
+      expect(mockNotaFiscalCreate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ type: 'NFSE' }),
+        }),
+      );
+    });
+
+    it('should throw if NFSe already exists for sale', async () => {
+      mockVendaFindUnique.mockResolvedValueOnce({
+        id: 's1', tenantId: 't1', status: 'CONFIRMADA', items: [],
+        client: null, paymentMethod: { name: 'PIX' },
+      });
+      mockNotaFiscalFindFirst.mockResolvedValueOnce({ id: 'nf-existing' });
+
+      await expect(emitirNFSe('t1', 's1')).rejects.toThrow('Ja existe uma NFSe para esta venda');
     });
   });
 

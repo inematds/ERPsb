@@ -6,7 +6,7 @@ vi.mock('@/lib/env', () => ({
   },
 }));
 
-import { createNFe, getNFeStatus, cancelNFe, mapFocusStatus } from '@/integrations/fiscal-api/focusnfe.client';
+import { createNFe, getNFeStatus, cancelNFe, createNFSe, getNFSeStatus, cancelNFSe, mapFocusStatus } from '@/integrations/fiscal-api/focusnfe.client';
 
 describe('Focus NFe Client', () => {
   beforeEach(() => {
@@ -34,6 +34,28 @@ describe('Focus NFe Client', () => {
   describe('cancelNFe (mock mode)', () => {
     it('should return mock cancelado response when no token', async () => {
       const result = await cancelNFe('ref-789', 'motivo do cancelamento');
+      expect(result.status).toBe('cancelado');
+    });
+  });
+
+  describe('createNFSe (mock mode)', () => {
+    it('should return mock response when no token', async () => {
+      const result = await createNFSe('nfse-ref-123', { test: true });
+      expect(result.status).toBe('autorizado');
+      expect(result.caminho_xml_nota_fiscal).toContain('nfse-ref-123');
+    });
+  });
+
+  describe('getNFSeStatus (mock mode)', () => {
+    it('should return mock autorizado status when no token', async () => {
+      const result = await getNFSeStatus('nfse-ref-456');
+      expect(result.status).toBe('autorizado');
+    });
+  });
+
+  describe('cancelNFSe (mock mode)', () => {
+    it('should return mock cancelado response when no token', async () => {
+      const result = await cancelNFSe('nfse-ref-789', 'motivo do cancelamento nfse');
       expect(result.status).toBe('cancelado');
     });
   });

@@ -46,6 +46,7 @@ export default function VendaDetailPage() {
   const [loading, setLoading] = useState(true);
   const [cancelling, setCancelling] = useState(false);
   const [emittingNFe, setEmittingNFe] = useState(false);
+  const [emittingNFSe, setEmittingNFSe] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -103,6 +104,34 @@ export default function VendaDetailPage() {
       toast.error('Erro ao emitir NFe');
     } finally {
       setEmittingNFe(false);
+    }
+  };
+
+  const handleEmitirNFSe = async () => {
+    setEmittingNFSe(true);
+    try {
+      const res = await fetch('/api/v1/notas-fiscais/emitir-nfse', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ saleId: params.id }),
+      });
+      const json = await res.json();
+      if (res.ok) {
+        const status = json.data?.status;
+        if (status === 'AUTORIZADA') {
+          toast.success('NFSe emitida com sucesso!');
+        } else if (status === 'REJEITADA') {
+          toast.error(`NFSe rejeitada: ${json.data?.errorMessage ?? 'Erro desconhecido'}`);
+        } else {
+          toast.info('NFSe em processamento...');
+        }
+      } else {
+        toast.error(json.error || 'Erro ao emitir NFSe');
+      }
+    } catch {
+      toast.error('Erro ao emitir NFSe');
+    } finally {
+      setEmittingNFSe(false);
     }
   };
 
@@ -248,7 +277,15 @@ export default function VendaDetailPage() {
               disabled={emittingNFe}
             >
               <FileText className="h-4 w-4 mr-1" />
-              {emittingNFe ? 'Emitindo...' : 'Emitir NFe'}
+              {emittingNFe ? 'Emitindo...' : 'NFe'}
+            </Button>
+            <Button
+              variant="outline"
+              onClick={handleEmitirNFSe}
+              disabled={emittingNFSe}
+            >
+              <FileText className="h-4 w-4 mr-1" />
+              {emittingNFSe ? 'Emitindo...' : 'NFSe'}
             </Button>
             <Button
               variant="outline"

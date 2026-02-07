@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   emitirNFeSchema,
+  emitirNFSeSchema,
   listNotasFiscaisQuerySchema,
   cancelarNotaSchema,
 } from '@/modules/fiscal/nota-fiscal.schema';
@@ -19,6 +20,18 @@ describe('Nota Fiscal Schema', () => {
 
     it('should reject missing saleId', () => {
       const result = emitirNFeSchema.safeParse({});
+      expect(result.success).toBe(false);
+    });
+  });
+
+  describe('emitirNFSeSchema', () => {
+    it('should accept valid saleId', () => {
+      const result = emitirNFSeSchema.safeParse({ saleId: 'sale-456' });
+      expect(result.success).toBe(true);
+    });
+
+    it('should reject empty saleId', () => {
+      const result = emitirNFSeSchema.safeParse({ saleId: '' });
       expect(result.success).toBe(false);
     });
   });
