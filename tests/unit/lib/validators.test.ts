@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { validateCNPJ, formatCNPJ } from '@/lib/validators';
+import { validateCNPJ, formatCNPJ, validateCPF, formatCPF, isValidDocument } from '@/lib/validators';
 
 describe('validateCNPJ', () => {
   it('should validate a correct CNPJ', () => {
@@ -39,5 +39,60 @@ describe('formatCNPJ', () => {
 
   it('should strip non-numeric characters', () => {
     expect(formatCNPJ('11.222.333/0001-81')).toBe('11.222.333/0001-81');
+  });
+});
+
+describe('validateCPF', () => {
+  it('should validate a correct CPF', () => {
+    // Valid CPF: 529.982.247-25
+    expect(validateCPF('52998224725')).toBe(true);
+  });
+
+  it('should validate a formatted CPF', () => {
+    expect(validateCPF('529.982.247-25')).toBe(true);
+  });
+
+  it('should reject a CPF with wrong check digits', () => {
+    expect(validateCPF('52998224726')).toBe(false);
+  });
+
+  it('should reject a CPF with all same digits', () => {
+    expect(validateCPF('11111111111')).toBe(false);
+    expect(validateCPF('00000000000')).toBe(false);
+  });
+
+  it('should reject a CPF with wrong length', () => {
+    expect(validateCPF('5299822472')).toBe(false);
+    expect(validateCPF('529982247250')).toBe(false);
+    expect(validateCPF('')).toBe(false);
+  });
+});
+
+describe('formatCPF', () => {
+  it('should format a raw CPF string', () => {
+    expect(formatCPF('52998224725')).toBe('529.982.247-25');
+  });
+
+  it('should handle partial input', () => {
+    expect(formatCPF('529')).toBe('529');
+    expect(formatCPF('5299')).toBe('529.9');
+  });
+});
+
+describe('isValidDocument', () => {
+  it('should validate a CPF (11 digits)', () => {
+    expect(isValidDocument('52998224725')).toBe(true);
+  });
+
+  it('should validate a CNPJ (14 digits)', () => {
+    expect(isValidDocument('11222333000181')).toBe(true);
+  });
+
+  it('should reject invalid CPF', () => {
+    expect(isValidDocument('12345678901')).toBe(false);
+  });
+
+  it('should reject invalid CNPJ', () => {
+    expect(isValidDocument('11222333000182')).toBe(false);
   });
 });

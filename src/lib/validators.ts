@@ -44,3 +44,56 @@ export function formatCNPJ(value: string): string {
     .replace(/\.(\d{3})(\d)/, '.$1/$2')
     .replace(/(\d{4})(\d)/, '$1-$2');
 }
+
+/**
+ * Validates a Brazilian CPF number.
+ * Accepts formatted (XXX.XXX.XXX-XX) or unformatted (11 digits).
+ */
+export function validateCPF(cpf: string): boolean {
+  const cleaned = cpf.replace(/\D/g, '');
+
+  if (cleaned.length !== 11) return false;
+
+  // Reject known invalid patterns (all same digit)
+  if (/^(\d)\1{10}$/.test(cleaned)) return false;
+
+  // Validate first check digit
+  let sum = 0;
+  for (let i = 0; i < 9; i++) {
+    sum += parseInt(cleaned[i]) * (10 - i);
+  }
+  let remainder = (sum * 10) % 11;
+  if (remainder === 10) remainder = 0;
+  if (parseInt(cleaned[9]) !== remainder) return false;
+
+  // Validate second check digit
+  sum = 0;
+  for (let i = 0; i < 10; i++) {
+    sum += parseInt(cleaned[i]) * (11 - i);
+  }
+  remainder = (sum * 10) % 11;
+  if (remainder === 10) remainder = 0;
+  if (parseInt(cleaned[10]) !== remainder) return false;
+
+  return true;
+}
+
+/**
+ * Formats a CPF string to XXX.XXX.XXX-XX pattern.
+ */
+export function formatCPF(value: string): string {
+  const cleaned = value.replace(/\D/g, '').slice(0, 11);
+  return cleaned
+    .replace(/^(\d{3})(\d)/, '$1.$2')
+    .replace(/^(\d{3})\.(\d{3})(\d)/, '$1.$2.$3')
+    .replace(/\.(\d{3})(\d)/, '.$1-$2');
+}
+
+/**
+ * Detects CPF vs CNPJ by digit count and validates accordingly.
+ */
+export function isValidDocument(value: string): boolean {
+  const cleaned = value.replace(/\D/g, '');
+  if (cleaned.length <= 11) return validateCPF(cleaned);
+  return validateCNPJ(cleaned);
+}
