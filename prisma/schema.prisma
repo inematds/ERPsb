@@ -74,6 +74,7 @@ model Tenant {
   fornecedores        Fornecedor[]
   produtos            Produto[]
   formasPagamento     FormaPagamento[]
+  contasPagar         ContaPagar[]
   createdAt           DateTime     @default(now())
   updatedAt           DateTime     @updatedAt
 
@@ -115,17 +116,18 @@ model Cliente {
 }
 
 model Fornecedor {
-  id        String   @id @default(cuid())
-  tenantId  String
-  name      String
-  phone     String?
-  email     String?
-  document  String?
-  address   Json?
-  notes     String?
-  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String       @id @default(cuid())
+  tenantId    String
+  name        String
+  phone       String?
+  email       String?
+  document    String?
+  address     Json?
+  notes       String?
+  tenant      Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  contasPagar ContaPagar[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
 
   @@index([tenantId, name])
   @@map("fornecedores")
@@ -169,4 +171,29 @@ model FormaPagamento {
 
   @@index([tenantId])
   @@map("formas_pagamento")
+}
+
+// ==================== FINANCEIRO ====================
+
+model ContaPagar {
+  id             String      @id @default(cuid())
+  tenantId       String
+  description    String
+  amount         Int
+  dueDate        DateTime
+  paidDate       DateTime?
+  status         String      @default("PENDENTE")
+  category       String
+  supplierId     String?
+  notes          String?
+  recurrent      Boolean     @default(false)
+  recurrenceType String?
+  tenant         Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  supplier       Fornecedor? @relation(fields: [supplierId], references: [id])
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  @@index([tenantId, status])
+  @@index([tenantId, dueDate])
+  @@map("contas_pagar")
 }
