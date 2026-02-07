@@ -79,6 +79,7 @@ model Tenant {
   vendas              Venda[]
   orcamentos          Orcamento[]
   pixCharges          PixCharge[]
+  notifications       Notification[]
   createdAt           DateTime     @default(now())
   updatedAt           DateTime     @updatedAt
 
@@ -302,4 +303,36 @@ model PixCharge {
   @@index([tenantId, status])
   @@index([contaReceberId])
   @@map("pix_charges")
+}
+
+// ==================== WEBHOOKS & NOTIFICATIONS ====================
+
+model WebhookLog {
+  id         String   @id @default(cuid())
+  tenantId   String?
+  source     String
+  eventType  String
+  externalId String?
+  payload    Json
+  status     String   @default("RECEIVED")
+  error      String?
+  createdAt  DateTime @default(now())
+
+  @@index([source, externalId])
+  @@map("webhook_logs")
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  tenantId  String
+  type      String
+  title     String
+  message   String
+  read      Boolean  @default(false)
+  metadata  Json?
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([tenantId, read])
+  @@map("notifications")
 }
