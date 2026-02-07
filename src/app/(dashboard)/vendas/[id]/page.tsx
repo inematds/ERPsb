@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, CheckCircle2, XCircle, Plus } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, XCircle, Plus, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -45,6 +45,7 @@ export default function VendaDetailPage() {
   const [venda, setVenda] = useState<VendaDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [cancelling, setCancelling] = useState(false);
+  const [emittingNFe, setEmittingNFe] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -74,6 +75,34 @@ export default function VendaDetailPage() {
       }
     } finally {
       setCancelling(false);
+    }
+  };
+
+  const handleEmitirNFe = async () => {
+    setEmittingNFe(true);
+    try {
+      const res = await fetch('/api/v1/notas-fiscais', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ saleId: params.id }),
+      });
+      const json = await res.json();
+      if (res.ok) {
+        const status = json.data?.status;
+        if (status === 'AUTORIZADA') {
+          toast.success('NFe emitida com sucesso!');
+        } else if (status === 'REJEITADA') {
+          toast.error(`NFe rejeitada: ${json.data?.errorMessage ?? 'Erro desconhecido'}`);
+        } else {
+          toast.info('NFe em processamento...');
+        }
+      } else {
+        toast.error(json.error || 'Erro ao emitir NFe');
+      }
+    } catch {
+      toast.error('Erro ao emitir NFe');
+    } finally {
+      setEmittingNFe(false);
     }
   };
 
@@ -212,14 +241,24 @@ export default function VendaDetailPage() {
           </Link>
         </Button>
         {venda.status === 'CONFIRMADA' && (
-          <Button
-            variant="outline"
-            className="text-red-600"
-            onClick={handleCancel}
-            disabled={cancelling}
-          >
-            {cancelling ? 'Cancelando...' : 'Cancelar'}
-          </Button>
+          <>
+            <Button
+              variant="outline"
+              onClick={handleEmitirNFe}
+              disabled={emittingNFe}
+            >
+              <FileText className="h-4 w-4 mr-1" />
+              {emittingNFe ? 'Emitindo...' : 'Emitir NFe'}
+            </Button>
+            <Button
+              variant="outline"
+              className="text-red-600"
+              onClick={handleCancel}
+              disabled={cancelling}
+            >
+              {cancelling ? 'Cancelando...' : 'Cancelar'}
+            </Button>
+          </>
         )}
       </div>
     </div>
