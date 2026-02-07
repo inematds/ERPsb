@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, CheckCircle2, XCircle, Plus, FileText } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, XCircle, Plus, FileText, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -28,7 +28,7 @@ interface VendaDetail {
   status: string;
   notes: string | null;
   createdAt: string;
-  client: { id: string; name: string } | null;
+  client: { id: string; name: string; phone?: string } | null;
   paymentMethod: { id: string; name: string; type: string };
   contasReceber: { id: string; status: string; amount: number }[];
 }
@@ -48,6 +48,7 @@ export default function VendaDetailPage() {
   const [emittingNFe, setEmittingNFe] = useState(false);
   const [emittingNFSe, setEmittingNFSe] = useState(false);
   const [emittingNFCe, setEmittingNFCe] = useState(false);
+  const [sendingWhatsApp, setSendingWhatsApp] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -161,6 +162,40 @@ export default function VendaDetailPage() {
       toast.error('Erro ao emitir NFCe');
     } finally {
       setEmittingNFCe(false);
+    }
+  };
+
+  const handleSendWhatsApp = async () => {
+    if (!venda?.client?.phone) {
+      toast.error('Cliente sem telefone cadastrado');
+      return;
+    }
+    setSendingWhatsApp(true);
+    try {
+      const res = await fetch('/api/v1/whatsapp/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phone: venda.client.phone,
+          clientId: venda.client.id,
+          templateId: 'cobranca_pix',
+          templateVars: {
+            nome: venda.client.name,
+            valor: `R$ ${(venda.total / 100).toFixed(2).replace('.', ',')}`,
+            link_pix: '',
+          },
+        }),
+      });
+      if (res.ok) {
+        toast.success('Mensagem enviada pelo WhatsApp');
+      } else {
+        const json = await res.json();
+        toast.error(json.error || 'Erro ao enviar WhatsApp');
+      }
+    } catch {
+      toast.error('Erro ao enviar WhatsApp');
+    } finally {
+      setSendingWhatsApp(false);
     }
   };
 
@@ -324,6 +359,17 @@ export default function VendaDetailPage() {
               <FileText className="h-4 w-4 mr-1" />
               {emittingNFCe ? 'Emitindo...' : 'NFCe'}
             </Button>
+            {venda.client?.phone && (
+              <Button
+                variant="outline"
+                className="text-green-600"
+                onClick={handleSendWhatsApp}
+                disabled={sendingWhatsApp}
+              >
+                <MessageCircle className="h-4 w-4 mr-1" />
+                {sendingWhatsApp ? 'Enviando...' : 'WhatsApp'}
+              </Button>
+            )}
             <Button
               variant="outline"
               className="text-red-600"

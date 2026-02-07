@@ -82,6 +82,7 @@ model Tenant {
   notifications       Notification[]
   configFiscal        ConfigFiscal?
   notasFiscais        NotaFiscal[]
+  whatsappMessages    WhatsAppMessage[]
   createdAt           DateTime     @default(now())
   updatedAt           DateTime     @updatedAt
 
@@ -116,9 +117,10 @@ model Cliente {
   tenant        Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   contasReceber ContaReceber[]
   vendas        Venda[]
-  orcamentos    Orcamento[]
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  orcamentos        Orcamento[]
+  whatsappMessages  WhatsAppMessage[]
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
 
   @@index([tenantId, name])
   @@index([tenantId, phone])
@@ -389,4 +391,30 @@ model NotaFiscal {
   @@index([tenantId, type, status])
   @@index([saleId])
   @@map("notas_fiscais")
+}
+
+// ==================== WHATSAPP ====================
+
+model WhatsAppMessage {
+  id           String    @id @default(cuid())
+  tenantId     String
+  clientId     String?
+  phone        String
+  type         String    // cobranca, nfe, lembrete, orcamento
+  templateId   String
+  templateVars Json?
+  messageText  String
+  status       String    @default("QUEUED") // QUEUED, SENT, DELIVERED, READ, FAILED
+  externalId   String?
+  errorMessage String?
+  sentAt       DateTime?
+  deliveredAt  DateTime?
+  readAt       DateTime?
+  tenant       Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  client       Cliente?  @relation(fields: [clientId], references: [id])
+  createdAt    DateTime  @default(now())
+
+  @@index([tenantId, type])
+  @@index([tenantId, status])
+  @@map("whatsapp_messages")
 }

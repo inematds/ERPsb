@@ -13,6 +13,8 @@ const envSchema = z.object({
   MERCADO_PAGO_ACCESS_TOKEN: z.string().optional(),
   MERCADO_PAGO_WEBHOOK_SECRET: z.string().optional(),
   FOCUS_NFE_TOKEN: z.string().optional(),
+  WHATSAPP_API_URL: z.string().optional(),
+  WHATSAPP_API_TOKEN: z.string().optional(),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
 });
 
