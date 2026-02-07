@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma';
+import { registrarSaidaVenda } from '@/modules/estoque/estoque.service';
 import type { CreateVendaInput, ListVendasQuery, VendaItem } from './venda.schema';
 
 export async function createVenda(data: CreateVendaInput) {
@@ -50,6 +51,18 @@ export async function confirmVenda(id: string) {
       paymentMethod: { select: { id: true, name: true, type: true } },
     },
   });
+
+  // Deduct stock for items (non-blocking - errors don't prevent sale)
+  const items = venda.items as VendaItem[];
+  try {
+    await registrarSaidaVenda(
+      venda.tenantId,
+      venda.id,
+      items.map((item) => ({ productId: item.productId, quantity: item.quantity })),
+    );
+  } catch {
+    // Stock deduction failure doesn't block sale confirmation
+  }
 
   // Create linked ContaReceber (all sales are "a vista" for MVP)
   await prisma.contaReceber.create({

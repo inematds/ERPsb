@@ -159,10 +159,11 @@ model Produto {
   description String?
   stockMin    Int?     @default(0)
   trackStock  Boolean  @default(true)
-  active      Boolean  @default(true)
-  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  active          Boolean  @default(true)
+  tenant          Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  movimentacoes   MovimentacaoEstoque[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   @@index([tenantId, name])
   @@index([tenantId, barcode])
@@ -432,4 +433,23 @@ model LembreteConfig {
   updatedAt   DateTime @updatedAt
 
   @@map("lembrete_configs")
+}
+
+// ==================== ESTOQUE ====================
+
+model MovimentacaoEstoque {
+  id          String   @id @default(cuid())
+  tenantId    String
+  productId   String
+  type        String   // ENTRADA, SAIDA, AJUSTE
+  quantity    Int
+  reason      String   // compra, venda, ajuste_manual
+  referenceId String?  // saleId or other reference
+  notes       String?
+  produto     Produto  @relation(fields: [productId], references: [id])
+  createdAt   DateTime @default(now())
+
+  @@index([tenantId, productId])
+  @@index([tenantId, createdAt])
+  @@map("movimentacoes_estoque")
 }
