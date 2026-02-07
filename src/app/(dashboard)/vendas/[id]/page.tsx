@@ -1,0 +1,227 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { ArrowLeft, CheckCircle2, XCircle, Plus } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { formatCurrency } from '@/lib/formatters';
+import { toast } from 'sonner';
+
+interface VendaItem {
+  productId: string;
+  name: string;
+  quantity: number;
+  unitPrice: number;
+  total: number;
+}
+
+interface VendaDetail {
+  id: string;
+  number: number | null;
+  items: VendaItem[];
+  subtotal: number;
+  discount: number;
+  total: number;
+  status: string;
+  notes: string | null;
+  createdAt: string;
+  client: { id: string; name: string } | null;
+  paymentMethod: { id: string; name: string; type: string };
+  contasReceber: { id: string; status: string; amount: number }[];
+}
+
+const STATUS_COLORS: Record<string, string> = {
+  RASCUNHO: 'bg-gray-100 text-gray-800',
+  CONFIRMADA: 'bg-green-100 text-green-800',
+  CANCELADA: 'bg-red-100 text-red-800',
+};
+
+export default function VendaDetailPage() {
+  const params = useParams();
+  const router = useRouter();
+  const [venda, setVenda] = useState<VendaDetail | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [cancelling, setCancelling] = useState(false);
+
+  useEffect(() => {
+    async function load() {
+      const res = await fetch(`/api/v1/vendas/${params.id}`);
+      if (res.ok) {
+        const json = await res.json();
+        setVenda(json.data);
+      }
+      setLoading(false);
+    }
+    load();
+  }, [params.id]);
+
+  const handleCancel = async () => {
+    if (!confirm('Tem certeza que deseja cancelar esta venda?')) return;
+
+    setCancelling(true);
+    try {
+      const res = await fetch(`/api/v1/vendas/${params.id}/cancelar`, { method: 'POST' });
+      if (res.ok) {
+        const json = await res.json();
+        setVenda(json.data);
+        toast.success('Venda cancelada');
+      } else {
+        const json = await res.json();
+        toast.error(json.error || 'Erro ao cancelar');
+      }
+    } finally {
+      setCancelling(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="p-4 space-y-4">
+        <div className="h-8 bg-muted animate-pulse rounded w-48" />
+        <div className="h-40 bg-muted animate-pulse rounded" />
+      </div>
+    );
+  }
+
+  if (!venda) {
+    return (
+      <div className="p-4 space-y-4">
+        <h1 className="text-xl font-bold">Venda nao encontrada</h1>
+        <Button asChild>
+          <Link href="/vendas">Voltar</Link>
+        </Button>
+      </div>
+    );
+  }
+
+  const items = venda.items as VendaItem[];
+  const dateStr = new Date(venda.createdAt).toLocaleDateString('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+
+  return (
+    <div className="p-4 space-y-4">
+      {/* Header */}
+      <div className="flex items-center gap-2">
+        <Button variant="ghost" size="sm" asChild>
+          <Link href="/vendas">
+            <ArrowLeft className="h-4 w-4" />
+          </Link>
+        </Button>
+        <h1 className="text-xl font-bold">
+          {venda.number ? `Venda #${venda.number}` : 'Venda (rascunho)'}
+        </h1>
+        <Badge className={STATUS_COLORS[venda.status]}>{venda.status}</Badge>
+      </div>
+
+      {/* Confirmation banner */}
+      {venda.status === 'CONFIRMADA' && (
+        <Card className="border-green-200 bg-green-50">
+          <CardContent className="py-3 flex items-center gap-3">
+            <CheckCircle2 className="h-6 w-6 text-green-600" />
+            <div>
+              <p className="font-semibold text-green-800">Venda confirmada!</p>
+              <p className="text-sm text-green-700">Conta a receber gerada automaticamente.</p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {venda.status === 'CANCELADA' && (
+        <Card className="border-red-200 bg-red-50">
+          <CardContent className="py-3 flex items-center gap-3">
+            <XCircle className="h-6 w-6 text-red-600" />
+            <div>
+              <p className="font-semibold text-red-800">Venda cancelada</p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Sale info */}
+      <Card>
+        <CardContent className="py-3 space-y-2">
+          <div className="flex justify-between text-sm">
+            <span className="text-muted-foreground">Data</span>
+            <span>{dateStr}</span>
+          </div>
+          <div className="flex justify-between text-sm">
+            <span className="text-muted-foreground">Cliente</span>
+            <span>{venda.client?.name || 'Nao informado'}</span>
+          </div>
+          <div className="flex justify-between text-sm">
+            <span className="text-muted-foreground">Pagamento</span>
+            <span>{venda.paymentMethod.name}</span>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Items */}
+      <Card>
+        <CardHeader className="py-3">
+          <CardTitle className="text-base">Itens ({items.length})</CardTitle>
+        </CardHeader>
+        <CardContent className="py-0 pb-3 space-y-2">
+          {items.map((item, idx) => (
+            <div key={idx} className="flex justify-between text-sm">
+              <div>
+                <span className="font-medium">{item.name}</span>
+                <span className="text-muted-foreground ml-1">
+                  x{item.quantity} ({formatCurrency(item.unitPrice)})
+                </span>
+              </div>
+              <span className="font-medium">{formatCurrency(item.total)}</span>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+
+      {/* Totals */}
+      <Card>
+        <CardContent className="py-3 space-y-1">
+          <div className="flex justify-between text-sm">
+            <span className="text-muted-foreground">Subtotal</span>
+            <span>{formatCurrency(venda.subtotal)}</span>
+          </div>
+          {venda.discount > 0 && (
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">Desconto</span>
+              <span className="text-red-600">-{formatCurrency(venda.discount)}</span>
+            </div>
+          )}
+          <div className="flex justify-between text-lg font-bold border-t pt-1">
+            <span>Total</span>
+            <span>{formatCurrency(venda.total)}</span>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Actions */}
+      <div className="flex gap-3">
+        <Button className="flex-1" asChild>
+          <Link href="/vendas/nova">
+            <Plus className="h-4 w-4 mr-2" />
+            Nova Venda
+          </Link>
+        </Button>
+        {venda.status === 'CONFIRMADA' && (
+          <Button
+            variant="outline"
+            className="text-red-600"
+            onClick={handleCancel}
+            disabled={cancelling}
+          >
+            {cancelling ? 'Cancelando...' : 'Cancelar'}
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+}

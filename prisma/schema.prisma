@@ -76,6 +76,7 @@ model Tenant {
   produtos            Produto[]
   formasPagamento     FormaPagamento[]
   contasPagar         ContaPagar[]
+  vendas              Venda[]
   createdAt           DateTime     @default(now())
   updatedAt           DateTime     @updatedAt
 
@@ -109,6 +110,7 @@ model Cliente {
   notes         String?
   tenant        Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   contasReceber ContaReceber[]
+  vendas        Venda[]
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 
@@ -168,6 +170,7 @@ model FormaPagamento {
   installments Int      @default(1)
   fee          Int      @default(0)
   tenant       Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  vendas       Venda[]
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -210,13 +213,41 @@ model ContaReceber {
   status       String    @default("PENDENTE")
   category     String
   clientId     String?
+  saleId       String?
   notes        String?
   tenant       Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   client       Cliente?  @relation(fields: [clientId], references: [id])
+  sale         Venda?    @relation(fields: [saleId], references: [id])
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
   @@index([tenantId, status])
   @@index([tenantId, dueDate])
   @@map("contas_receber")
+}
+
+// ==================== VENDAS ====================
+
+model Venda {
+  id              String          @id @default(cuid())
+  tenantId        String
+  number          Int?
+  clientId        String?
+  items           Json
+  subtotal        Int
+  discount        Int             @default(0)
+  total           Int
+  paymentMethodId String
+  status          String          @default("RASCUNHO")
+  notes           String?
+  tenant          Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  client          Cliente?        @relation(fields: [clientId], references: [id])
+  paymentMethod   FormaPagamento  @relation(fields: [paymentMethodId], references: [id])
+  contasReceber   ContaReceber[]
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@index([tenantId, status])
+  @@index([tenantId, createdAt])
+  @@map("vendas")
 }
