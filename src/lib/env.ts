@@ -10,6 +10,8 @@ const envSchema = z.object({
   NEXT_PUBLIC_SENTRY_DSN: z.string().optional(),
   SENTRY_ORG: z.string().optional(),
   SENTRY_PROJECT: z.string().optional(),
+  MERCADO_PAGO_ACCESS_TOKEN: z.string().optional(),
+  MERCADO_PAGO_WEBHOOK_SECRET: z.string().optional(),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
 });
 

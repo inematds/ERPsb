@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { HandCoins, Plus, Search, ChevronLeft, ChevronRight, Check } from 'lucide-react';
+import { HandCoins, Plus, Search, ChevronLeft, ChevronRight, Check, QrCode } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
@@ -128,6 +128,20 @@ export default function ContasReceberPage() {
     }
   };
 
+  const handleCobrarPix = async (contaReceberId: string) => {
+    const res = await fetch('/api/v1/pix', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contaReceberId }),
+    });
+    if (res.ok) {
+      const json = await res.json();
+      window.location.href = `/financeiro/pix/${json.data.id}`;
+    } else {
+      toast.error('Erro ao gerar cobranca PIX');
+    }
+  };
+
   const totalPages = Math.ceil(meta.total / meta.pageSize);
 
   if (isLoading && contas.length === 0) {
@@ -222,19 +236,34 @@ export default function ContasReceberPage() {
                           </Badge>
                         </div>
                         {(conta.status === 'PENDENTE' || conta.status === 'VENCIDO') && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="h-8 w-8 p-0"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              handleMarkAsReceived(conta.id);
-                            }}
-                            title="Marcar como recebido"
-                          >
-                            <Check className="h-4 w-4 text-green-600" />
-                          </Button>
+                          <>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-8 w-8 p-0"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleCobrarPix(conta.id);
+                              }}
+                              title="Cobrar via PIX"
+                            >
+                              <QrCode className="h-4 w-4 text-purple-600" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-8 w-8 p-0"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleMarkAsReceived(conta.id);
+                              }}
+                              title="Marcar como recebido"
+                            >
+                              <Check className="h-4 w-4 text-green-600" />
+                            </Button>
+                          </>
                         )}
                       </div>
                     </div>

@@ -78,6 +78,7 @@ model Tenant {
   contasPagar         ContaPagar[]
   vendas              Venda[]
   orcamentos          Orcamento[]
+  pixCharges          PixCharge[]
   createdAt           DateTime     @default(now())
   updatedAt           DateTime     @updatedAt
 
@@ -220,6 +221,7 @@ model ContaReceber {
   tenant       Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   client       Cliente?  @relation(fields: [clientId], references: [id])
   sale         Venda?    @relation(fields: [saleId], references: [id])
+  pixCharges   PixCharge[]
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
@@ -277,4 +279,27 @@ model Orcamento {
   @@index([tenantId, status])
   @@index([tenantId, createdAt])
   @@map("orcamentos")
+}
+
+// ==================== PIX ====================
+
+model PixCharge {
+  id              String       @id @default(cuid())
+  tenantId        String
+  contaReceberId  String
+  externalId      String?
+  amount          Int
+  qrCode          String?
+  qrCodeText      String?
+  paymentLink     String?
+  status          String       @default("PENDING")
+  expiresAt       DateTime
+  paidAt          DateTime?
+  tenant          Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  contaReceber    ContaReceber @relation(fields: [contaReceberId], references: [id])
+  createdAt       DateTime     @default(now())
+
+  @@index([tenantId, status])
+  @@index([contaReceberId])
+  @@map("pix_charges")
 }
