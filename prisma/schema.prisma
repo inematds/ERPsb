@@ -83,6 +83,7 @@ model Tenant {
   configFiscal        ConfigFiscal?
   notasFiscais        NotaFiscal[]
   whatsappMessages    WhatsAppMessage[]
+  lembreteConfig      LembreteConfig?
   createdAt           DateTime     @default(now())
   updatedAt           DateTime     @updatedAt
 
@@ -417,4 +418,18 @@ model WhatsAppMessage {
   @@index([tenantId, type])
   @@index([tenantId, status])
   @@map("whatsapp_messages")
+}
+
+model LembreteConfig {
+  id          String  @id @default(cuid())
+  tenantId    String  @unique
+  ativo       Boolean @default(false)
+  diasAntes   Int     @default(3)
+  noDia       Boolean @default(true)
+  diasDepois  Int     @default(1)
+  tenant      Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("lembrete_configs")
 }
