@@ -77,6 +77,7 @@ model Tenant {
   formasPagamento     FormaPagamento[]
   contasPagar         ContaPagar[]
   vendas              Venda[]
+  orcamentos          Orcamento[]
   createdAt           DateTime     @default(now())
   updatedAt           DateTime     @updatedAt
 
@@ -111,6 +112,7 @@ model Cliente {
   tenant        Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   contasReceber ContaReceber[]
   vendas        Venda[]
+  orcamentos    Orcamento[]
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 
@@ -244,10 +246,35 @@ model Venda {
   client          Cliente?        @relation(fields: [clientId], references: [id])
   paymentMethod   FormaPagamento  @relation(fields: [paymentMethodId], references: [id])
   contasReceber   ContaReceber[]
+  orcamentos      Orcamento[]
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
 
   @@index([tenantId, status])
   @@index([tenantId, createdAt])
   @@map("vendas")
+}
+
+model Orcamento {
+  id         String   @id @default(cuid())
+  tenantId   String
+  number     Int?
+  clientId   String
+  items      Json
+  subtotal   Int
+  discount   Int      @default(0)
+  total      Int
+  validUntil DateTime
+  status     String   @default("PENDENTE")
+  notes      String?
+  saleId     String?
+  tenant     Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  client     Cliente  @relation(fields: [clientId], references: [id])
+  sale       Venda?   @relation(fields: [saleId], references: [id])
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([tenantId, status])
+  @@index([tenantId, createdAt])
+  @@map("orcamentos")
 }
