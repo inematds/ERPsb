@@ -11,18 +11,50 @@ datasource db {
 // ==================== AUTH ====================
 
 model User {
-  id           String       @id @default(cuid())
-  email        String       @unique
-  name         String
-  image        String?
-  provider     String       @default("google")
-  passwordHash String?
-  tenants      UserTenant[]
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
+  id            String       @id @default(cuid())
+  email         String       @unique
+  emailVerified DateTime?
+  name          String
+  image         String?
+  provider      String       @default("google")
+  passwordHash  String?
+  accounts      Account[]
+  tenants       UserTenant[]
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
 
   @@map("users")
 }
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// ==================== TENANT ====================
 
 model Tenant {
   id                  String       @id @default(cuid())
