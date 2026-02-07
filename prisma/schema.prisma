@@ -71,6 +71,7 @@ model Tenant {
   logo                String?
   users               UserTenant[]
   clientes            Cliente[]
+  fornecedores        Fornecedor[]
   createdAt           DateTime     @default(now())
   updatedAt           DateTime     @updatedAt
 
@@ -109,4 +110,21 @@ model Cliente {
   @@index([tenantId, name])
   @@index([tenantId, phone])
   @@map("clientes")
+}
+
+model Fornecedor {
+  id        String   @id @default(cuid())
+  tenantId  String
+  name      String
+  phone     String?
+  email     String?
+  document  String?
+  address   Json?
+  notes     String?
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tenantId, name])
+  @@map("fornecedores")
 }
