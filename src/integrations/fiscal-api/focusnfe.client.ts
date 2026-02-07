@@ -228,6 +228,103 @@ export async function cancelNFSe(
   return response.json();
 }
 
+// ==================== NFCe ====================
+
+function getMockNFCeCreateResponse(ref: string): FocusNFeMockResponse {
+  return {
+    mock: true,
+    status: 'autorizado',
+    status_sefaz: '100',
+    mensagem_sefaz: 'Autorizado o uso da NFC-e (MOCK)',
+    chave_nfe: `35260200000000000100650010000000011${ref.slice(0, 9).padStart(9, '0')}`,
+    numero: '1',
+    serie: '1',
+    caminho_xml_nota_fiscal: `/mock/xml/nfce-${ref}.xml`,
+    caminho_danfe: `/mock/danfe/nfce-${ref}.pdf`,
+  };
+}
+
+export async function createNFCe(
+  ref: string,
+  nfceData: Record<string, unknown>,
+  ambiente: string = 'homologacao',
+): Promise<FocusNFeResponse> {
+  const token = env.FOCUS_NFE_TOKEN;
+
+  if (!token) {
+    return getMockNFCeCreateResponse(ref);
+  }
+
+  const baseUrl = getBaseUrl(ambiente);
+  const response = await fetch(`${baseUrl}/nfce?ref=${encodeURIComponent(ref)}`, {
+    method: 'POST',
+    headers: {
+      'Authorization': getAuthHeader(),
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(nfceData),
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`Focus NFe API error (NFCe): ${response.status} - ${error}`);
+  }
+
+  return response.json();
+}
+
+export async function getNFCeStatus(
+  ref: string,
+  ambiente: string = 'homologacao',
+): Promise<FocusNFeResponse> {
+  const token = env.FOCUS_NFE_TOKEN;
+
+  if (!token) {
+    return getMockNFCeCreateResponse(ref);
+  }
+
+  const baseUrl = getBaseUrl(ambiente);
+  const response = await fetch(`${baseUrl}/nfce/${encodeURIComponent(ref)}`, {
+    headers: { 'Authorization': getAuthHeader() },
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`Focus NFe API error (NFCe): ${response.status} - ${error}`);
+  }
+
+  return response.json();
+}
+
+export async function cancelNFCe(
+  ref: string,
+  motivo: string,
+  ambiente: string = 'homologacao',
+): Promise<FocusNFeResponse> {
+  const token = env.FOCUS_NFE_TOKEN;
+
+  if (!token) {
+    return { status: 'cancelado', mensagem_sefaz: 'Cancelamento NFCe autorizado (MOCK)' };
+  }
+
+  const baseUrl = getBaseUrl(ambiente);
+  const response = await fetch(`${baseUrl}/nfce/${encodeURIComponent(ref)}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': getAuthHeader(),
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ justificativa: motivo }),
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`Focus NFe API error (NFCe): ${response.status} - ${error}`);
+  }
+
+  return response.json();
+}
+
 export function mapFocusStatus(status: string): 'PROCESSANDO' | 'AUTORIZADA' | 'REJEITADA' | 'CANCELADA' {
   switch (status) {
     case 'autorizado':

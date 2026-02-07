@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   emitirNFeSchema,
   emitirNFSeSchema,
+  emitirNFCeSchema,
   listNotasFiscaisQuerySchema,
   cancelarNotaSchema,
 } from '@/modules/fiscal/nota-fiscal.schema';
@@ -36,6 +37,23 @@ describe('Nota Fiscal Schema', () => {
     });
   });
 
+  describe('emitirNFCeSchema', () => {
+    it('should accept valid saleId', () => {
+      const result = emitirNFCeSchema.safeParse({ saleId: 'sale-789' });
+      expect(result.success).toBe(true);
+    });
+
+    it('should reject empty saleId', () => {
+      const result = emitirNFCeSchema.safeParse({ saleId: '' });
+      expect(result.success).toBe(false);
+    });
+
+    it('should reject missing saleId', () => {
+      const result = emitirNFCeSchema.safeParse({});
+      expect(result.success).toBe(false);
+    });
+  });
+
   describe('listNotasFiscaisQuerySchema', () => {
     it('should apply defaults', () => {
       const result = listNotasFiscaisQuerySchema.safeParse({});
@@ -54,6 +72,11 @@ describe('Nota Fiscal Schema', () => {
     it('should reject invalid type', () => {
       const result = listNotasFiscaisQuerySchema.safeParse({ type: 'INVALID' });
       expect(result.success).toBe(false);
+    });
+
+    it('should accept NFCE type filter', () => {
+      const result = listNotasFiscaisQuerySchema.safeParse({ type: 'NFCE' });
+      expect(result.success).toBe(true);
     });
 
     it('should accept valid status filter', () => {

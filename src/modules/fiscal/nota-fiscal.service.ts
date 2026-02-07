@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/prisma';
-import { createNFe, getNFeStatus, cancelNFe, createNFSe, getNFSeStatus, cancelNFSe, mapFocusStatus } from '@/integrations/fiscal-api/focusnfe.client';
+import { createNFe, getNFeStatus, cancelNFe, createNFSe, getNFSeStatus, cancelNFSe, createNFCe, getNFCeStatus, cancelNFCe, mapFocusStatus } from '@/integrations/fiscal-api/focusnfe.client';
 import { getRegimeDefaults } from './fiscal.helpers';
 import { incrementNumero } from './config-fiscal.service';
 import type { ListNotasFiscaisQuery } from './nota-fiscal.schema';
@@ -152,6 +152,68 @@ export async function emitirNFSe(tenantId: string, saleId: string) {
   }
 }
 
+export async function emitirNFCe(tenantId: string, saleId: string) {
+  const venda = await prisma.venda.findUnique({
+    where: { id: saleId },
+    include: { client: true, paymentMethod: true },
+  });
+
+  if (!venda) throw new Error('Venda nao encontrada');
+  if (venda.tenantId !== tenantId) throw new Error('Venda nao pertence ao tenant');
+  if (venda.status !== 'CONFIRMADA') throw new Error('Venda precisa estar confirmada');
+
+  const existingNota = await prisma.notaFiscal.findFirst({
+    where: { saleId, type: 'NFCE', status: { in: ['PROCESSANDO', 'AUTORIZADA'] } },
+  });
+  if (existingNota) throw new Error('Ja existe uma NFCe para esta venda');
+
+  const config = await prisma.configFiscal.findUnique({ where: { tenantId } });
+  if (!config) throw new Error('Configuracao fiscal nao encontrada. Configure em Fiscal > Configuracao.');
+
+  const tenant = await prisma.tenant.findUnique({ where: { id: tenantId } });
+  if (!tenant) throw new Error('Tenant nao encontrado');
+
+  const numero = await incrementNumero(tenantId, 'NFCe');
+  const ref = `nfce-${tenantId.slice(0, 8)}-${numero}`;
+
+  const nfcePayload = buildNFCePayload(venda, config, tenant, numero);
+
+  const notaFiscal = await prisma.notaFiscal.create({
+    data: {
+      tenantId,
+      type: 'NFCE',
+      saleId,
+      numero,
+      serie: config.serieNFCe,
+      status: 'PROCESSANDO',
+      focusNfeId: ref,
+      dadosNota: nfcePayload as Record<string, unknown>,
+    },
+  });
+
+  try {
+    const result = await createNFCe(ref, nfcePayload as Record<string, unknown>, config.ambiente);
+    const newStatus = mapFocusStatus(result.status);
+
+    const updateData: Record<string, unknown> = { status: newStatus };
+    if (result.chave_nfe) updateData.chaveAcesso = result.chave_nfe;
+    if (result.caminho_danfe) updateData.pdfUrl = result.caminho_danfe;
+    if (result.mensagem_sefaz && newStatus === 'REJEITADA') updateData.errorMessage = result.mensagem_sefaz;
+    if (newStatus === 'AUTORIZADA') updateData.emitidaEm = new Date();
+    if (result.caminho_xml_nota_fiscal) {
+      updateData.xmlContent = `<!-- XML disponivel em: ${result.caminho_xml_nota_fiscal} -->`;
+    }
+
+    return prisma.notaFiscal.update({ where: { id: notaFiscal.id }, data: updateData });
+  } catch (err) {
+    await prisma.notaFiscal.update({
+      where: { id: notaFiscal.id },
+      data: { status: 'REJEITADA', errorMessage: err instanceof Error ? err.message : 'Erro ao emitir NFCe' },
+    });
+    throw err;
+  }
+}
+
 export async function getNotaFiscal(id: string) {
   return prisma.notaFiscal.findUnique({
     where: { id },
@@ -206,7 +268,8 @@ export async function checkNotaStatus(id: string) {
   const config = await prisma.configFiscal.findUnique({ where: { tenantId: nota.tenantId } });
   const ambiente = config?.ambiente ?? 'homologacao';
 
-  const statusFn = nota.type === 'NFSE' ? getNFSeStatus : getNFeStatus;
+  const statusFnMap = { NFE: getNFeStatus, NFSE: getNFSeStatus, NFCE: getNFCeStatus } as const;
+  const statusFn = statusFnMap[nota.type as keyof typeof statusFnMap] ?? getNFeStatus;
   const result = await statusFn(nota.focusNfeId, ambiente);
   const newStatus = mapFocusStatus(result.status);
 
@@ -232,7 +295,8 @@ export async function cancelarNota(id: string, motivo: string) {
   const config = await prisma.configFiscal.findUnique({ where: { tenantId: nota.tenantId } });
   const ambiente = config?.ambiente ?? 'homologacao';
 
-  const cancelFn = nota.type === 'NFSE' ? cancelNFSe : cancelNFe;
+  const cancelFnMap = { NFE: cancelNFe, NFSE: cancelNFSe, NFCE: cancelNFCe } as const;
+  const cancelFn = cancelFnMap[nota.type as keyof typeof cancelFnMap] ?? cancelNFe;
   await cancelFn(nota.focusNfeId, motivo, ambiente);
 
   return prisma.notaFiscal.update({
@@ -346,5 +410,63 @@ function buildNFSePayload(
     },
     numero_nfse: String(numero),
     serie_nfse: String(config.serieNFSe),
+  };
+}
+
+function buildNFCePayload(
+  venda: {
+    items: unknown;
+    total: number;
+    subtotal: number;
+    discount: number;
+    client: { name: string; document?: string | null } | null;
+  },
+  config: { regimeTributario: string | null; serieNFCe: number; inscricaoEstadual: string | null },
+  tenant: { name: string; document: string | null },
+  numero: number,
+) {
+  const items = venda.items as VendaItem[];
+  const regime = (config.regimeTributario ?? 'SIMPLES_NACIONAL') as RegimeTributario;
+  const defaults = getRegimeDefaults(regime);
+
+  const nfceItems = items.map((item, idx) => ({
+    numero_item: String(idx + 1),
+    codigo_produto: item.productId,
+    descricao: item.name,
+    quantidade_comercial: String(item.quantity),
+    quantidade_tributavel: String(item.quantity),
+    valor_unitario_comercial: (item.unitPrice / 100).toFixed(2),
+    valor_unitario_tributavel: (item.unitPrice / 100).toFixed(2),
+    valor_bruto: (item.total / 100).toFixed(2),
+    unidade_comercial: 'UN',
+    unidade_tributavel: 'UN',
+    cfop: defaults.cfopVendaInterna,
+    icms_situacao_tributaria: defaults.csosn ?? defaults.cstPadrao,
+    icms_origem: '0',
+    pis_situacao_tributaria: defaults.pisCofinsCst,
+    cofins_situacao_tributaria: defaults.pisCofinsCst,
+  }));
+
+  return {
+    natureza_operacao: 'VENDA AO CONSUMIDOR',
+    forma_pagamento: '0',
+    tipo_documento: '1',
+    finalidade_emissao: '1',
+    consumidor_final: '1',
+    presenca_comprador: '1',
+    numero_nfe: String(numero),
+    serie_nfe: String(config.serieNFCe),
+    cnpj_emitente: tenant.document ?? '',
+    nome_emitente: tenant.name,
+    inscricao_estadual_emitente: config.inscricaoEstadual ?? '',
+    regime_tributario: regime === 'SIMPLES_NACIONAL' || regime === 'MEI' ? '1' : '3',
+    nome_destinatario: venda.client?.name ?? 'CONSUMIDOR NAO IDENTIFICADO',
+    cpf_destinatario: venda.client?.document ?? undefined,
+    indicador_inscricao_estadual_destinatario: '9',
+    items: nfceItems,
+    valor_produtos: (venda.subtotal / 100).toFixed(2),
+    valor_desconto: (venda.discount / 100).toFixed(2),
+    valor_total: (venda.total / 100).toFixed(2),
+    modalidade_frete: '9',
   };
 }

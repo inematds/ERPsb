@@ -47,6 +47,7 @@ export default function VendaDetailPage() {
   const [cancelling, setCancelling] = useState(false);
   const [emittingNFe, setEmittingNFe] = useState(false);
   const [emittingNFSe, setEmittingNFSe] = useState(false);
+  const [emittingNFCe, setEmittingNFCe] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -132,6 +133,34 @@ export default function VendaDetailPage() {
       toast.error('Erro ao emitir NFSe');
     } finally {
       setEmittingNFSe(false);
+    }
+  };
+
+  const handleEmitirNFCe = async () => {
+    setEmittingNFCe(true);
+    try {
+      const res = await fetch('/api/v1/notas-fiscais/emitir-nfce', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ saleId: params.id }),
+      });
+      const json = await res.json();
+      if (res.ok) {
+        const status = json.data?.status;
+        if (status === 'AUTORIZADA') {
+          toast.success('NFCe emitida com sucesso!');
+        } else if (status === 'REJEITADA') {
+          toast.error(`NFCe rejeitada: ${json.data?.errorMessage ?? 'Erro desconhecido'}`);
+        } else {
+          toast.info('NFCe em processamento...');
+        }
+      } else {
+        toast.error(json.error || 'Erro ao emitir NFCe');
+      }
+    } catch {
+      toast.error('Erro ao emitir NFCe');
+    } finally {
+      setEmittingNFCe(false);
     }
   };
 
@@ -286,6 +315,14 @@ export default function VendaDetailPage() {
             >
               <FileText className="h-4 w-4 mr-1" />
               {emittingNFSe ? 'Emitindo...' : 'NFSe'}
+            </Button>
+            <Button
+              variant="outline"
+              onClick={handleEmitirNFCe}
+              disabled={emittingNFCe}
+            >
+              <FileText className="h-4 w-4 mr-1" />
+              {emittingNFCe ? 'Emitindo...' : 'NFCe'}
             </Button>
             <Button
               variant="outline"

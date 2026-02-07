@@ -12,6 +12,12 @@ export const emitirNFSeSchema = z.object({
 
 export type EmitirNFSeInput = z.infer<typeof emitirNFSeSchema>;
 
+export const emitirNFCeSchema = z.object({
+  saleId: z.string().min(1, 'ID da venda e obrigatorio'),
+});
+
+export type EmitirNFCeInput = z.infer<typeof emitirNFCeSchema>;
+
 export const listNotasFiscaisQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
   pageSize: z.coerce.number().int().min(1).max(100).default(20),
