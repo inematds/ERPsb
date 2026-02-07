@@ -1,0 +1,53 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ==================== AUTH ====================
+
+model User {
+  id           String       @id @default(cuid())
+  email        String       @unique
+  name         String
+  image        String?
+  provider     String       @default("google")
+  passwordHash String?
+  tenants      UserTenant[]
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  @@map("users")
+}
+
+model Tenant {
+  id                  String       @id @default(cuid())
+  name                String
+  document            String?
+  type                String       @default("INFORMAL")
+  plan                String       @default("FREE")
+  onboardingCompleted Boolean      @default(false)
+  users               UserTenant[]
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+
+  @@map("tenants")
+}
+
+model UserTenant {
+  id        String   @id @default(cuid())
+  userId    String
+  tenantId  String
+  role      String   @default("OWNER")
+  isActive  Boolean  @default(false)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, tenantId])
+  @@map("user_tenants")
+}

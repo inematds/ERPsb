@@ -37,5 +37,20 @@ Thumbs.db
 *.pem
 *.key
 
+# Test coverage
+coverage/
+
+# Sentry
+.sentryclirc
+
+# Vercel
+.vercel
+
 # AI debug logs
 .ai/
+
+# Next.js env
+next-env.d.ts
+
+# TypeScript build info
+tsconfig.tsbuildinfo
