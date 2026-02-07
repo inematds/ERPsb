@@ -71,6 +71,7 @@ model Tenant {
   logo                String?
   users               UserTenant[]
   clientes            Cliente[]
+  contasReceber       ContaReceber[]
   fornecedores        Fornecedor[]
   produtos            Produto[]
   formasPagamento     FormaPagamento[]
@@ -98,17 +99,18 @@ model UserTenant {
 // ==================== CADASTROS ====================
 
 model Cliente {
-  id        String   @id @default(cuid())
-  tenantId  String
-  name      String
-  phone     String
-  email     String?
-  document  String?
-  address   Json?
-  notes     String?
-  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String         @id @default(cuid())
+  tenantId      String
+  name          String
+  phone         String
+  email         String?
+  document      String?
+  address       Json?
+  notes         String?
+  tenant        Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  contasReceber ContaReceber[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
 
   @@index([tenantId, name])
   @@index([tenantId, phone])
@@ -196,4 +198,25 @@ model ContaPagar {
   @@index([tenantId, status])
   @@index([tenantId, dueDate])
   @@map("contas_pagar")
+}
+
+model ContaReceber {
+  id           String    @id @default(cuid())
+  tenantId     String
+  description  String
+  amount       Int
+  dueDate      DateTime
+  receivedDate DateTime?
+  status       String    @default("PENDENTE")
+  category     String
+  clientId     String?
+  notes        String?
+  tenant       Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  client       Cliente?  @relation(fields: [clientId], references: [id])
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([tenantId, status])
+  @@index([tenantId, dueDate])
+  @@map("contas_receber")
 }
