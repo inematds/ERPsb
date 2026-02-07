@@ -2,8 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getCurrentUser } from '@/core/auth/auth';
 import { createTenant } from '@/core/tenant/tenant.service';
+import { runWithTenant } from '@/core/tenant/tenant.context';
 import { determineTenantType, suggestPlan } from '@/lib/constants';
 import { validateCNPJ } from '@/lib/validators';
+import { createDefaultFormasPagamento } from '@/modules/cadastros/forma-pagamento.service';
 
 const onboardingSchema = z
   .object({
@@ -63,6 +65,11 @@ export async function POST(request: NextRequest) {
       onboardingCompleted: true,
     },
   });
+
+  // Create default payment methods within tenant context
+  await runWithTenant(tenant.id, () =>
+    createDefaultFormasPagamento(paymentMethods),
+  );
 
   return NextResponse.json(
     {

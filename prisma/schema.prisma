@@ -73,6 +73,7 @@ model Tenant {
   clientes            Cliente[]
   fornecedores        Fornecedor[]
   produtos            Produto[]
+  formasPagamento     FormaPagamento[]
   createdAt           DateTime     @default(now())
   updatedAt           DateTime     @updatedAt
 
@@ -151,4 +152,21 @@ model Produto {
   @@index([tenantId, name])
   @@index([tenantId, barcode])
   @@map("produtos")
+}
+
+model FormaPagamento {
+  id           String   @id @default(cuid())
+  tenantId     String
+  name         String
+  type         String
+  active       Boolean  @default(true)
+  isDefault    Boolean  @default(false)
+  installments Int      @default(1)
+  fee          Int      @default(0)
+  tenant       Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([tenantId])
+  @@map("formas_pagamento")
 }

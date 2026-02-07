@@ -9,6 +9,7 @@ interface EmptyStateProps {
   description: string;
   actionLabel?: string;
   actionHref?: string;
+  onAction?: () => void;
 }
 
 export function EmptyState({
@@ -17,6 +18,7 @@ export function EmptyState({
   description,
   actionLabel,
   actionHref,
+  onAction,
 }: EmptyStateProps) {
   return (
     <Card>
@@ -29,6 +31,11 @@ export function EmptyState({
         {actionLabel && actionHref && (
           <Button asChild className="mt-4">
             <Link href={actionHref}>{actionLabel}</Link>
+          </Button>
+        )}
+        {actionLabel && onAction && !actionHref && (
+          <Button className="mt-4" onClick={onAction}>
+            {actionLabel}
           </Button>
         )}
       </CardContent>
