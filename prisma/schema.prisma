@@ -72,6 +72,7 @@ model Tenant {
   users               UserTenant[]
   clientes            Cliente[]
   fornecedores        Fornecedor[]
+  produtos            Produto[]
   createdAt           DateTime     @default(now())
   updatedAt           DateTime     @updatedAt
 
@@ -127,4 +128,27 @@ model Fornecedor {
 
   @@index([tenantId, name])
   @@map("fornecedores")
+}
+
+model Produto {
+  id          String   @id @default(cuid())
+  tenantId    String
+  type        String   @default("PRODUTO")
+  name        String
+  sellPrice   Int
+  costPrice   Int?
+  unit        String   @default("un")
+  barcode     String?
+  ncm         String?
+  description String?
+  stockMin    Int?     @default(0)
+  trackStock  Boolean  @default(true)
+  active      Boolean  @default(true)
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([tenantId, name])
+  @@index([tenantId, barcode])
+  @@map("produtos")
 }
