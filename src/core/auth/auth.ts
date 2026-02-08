@@ -1,7 +1,7 @@
 import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import { PrismaAdapter } from '@auth/prisma-adapter';
-import { prisma } from '@/lib/prisma';
+import { basePrisma } from '@/lib/prisma';
 import { authConfig } from './auth.config';
 
 const devProviders: typeof authConfig.providers = [];
@@ -15,32 +15,42 @@ if (process.env.ENABLE_DEV_LOGIN === 'true' || process.env.NODE_ENV !== 'product
         password: { label: 'Senha', type: 'password' },
       },
       async authorize(credentials) {
-        const email = credentials?.email as string;
-        const password = credentials?.password as string;
-        if (!email || password !== 'dev12345') return null;
+        try {
+          const email = credentials?.email as string;
+          const password = credentials?.password as string;
+          if (!email || password !== 'dev12345') return null;
 
-        let user = await prisma.user.findUnique({ where: { email } });
-        if (!user) {
-          user = await prisma.user.create({
-            data: {
-              email,
-              name: email.split('@')[0],
-              provider: 'credentials',
-            },
-          });
+          let user = await basePrisma.user.findUnique({ where: { email } });
+          if (!user) {
+            user = await basePrisma.user.create({
+              data: {
+                email,
+                name: email.split('@')[0],
+                provider: 'credentials',
+              },
+            });
+          }
+          return { id: user.id, email: user.email, name: user.name };
+        } catch (error) {
+          console.error('[Dev Login] authorize error:', error);
+          return null;
         }
-        return { id: user.id, email: user.email, name: user.name };
       },
     }),
   );
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  adapter: PrismaAdapter(prisma),
+  adapter: PrismaAdapter(basePrisma),
   ...authConfig,
   providers: [...authConfig.providers, ...devProviders],
   callbacks: {
     ...authConfig.callbacks,
+    async signIn({ account }) {
+      // Credentials provider bypasses adapter — always allow
+      if (account?.provider === 'credentials') return true;
+      return true;
+    },
     async jwt({ token, user, trigger }) {
       if (user) {
         token.userId = user.id;
@@ -49,7 +59,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       // Fetch active tenant on sign in or update
       if (trigger === 'signIn' || trigger === 'update') {
         if (token.userId) {
-          const userTenant = await prisma.userTenant.findFirst({
+          const userTenant = await basePrisma.userTenant.findFirst({
             where: { userId: token.userId as string, isActive: true },
             select: { tenantId: true },
           });
@@ -66,11 +76,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return session;
     },
     async redirect({ url, baseUrl }) {
-      // If url is relative, prepend baseUrl
       if (url.startsWith('/')) {
         return `${baseUrl}${url}`;
       }
-      // If url is on the same origin
       if (new URL(url).origin === baseUrl) {
         return url;
       }
@@ -110,7 +118,7 @@ export async function getCurrentUser(): Promise<SessionUser | null> {
 }
 
 export async function getActiveTenantId(userId: string): Promise<string | null> {
-  const userTenant = await prisma.userTenant.findFirst({
+  const userTenant = await basePrisma.userTenant.findFirst({
     where: { userId, isActive: true },
     select: { tenantId: true },
   });
