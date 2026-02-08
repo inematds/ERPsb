@@ -1,13 +1,19 @@
 import type { NextAuthConfig } from 'next-auth';
 import Google from 'next-auth/providers/google';
 
-export const authConfig: NextAuthConfig = {
-  providers: [
+const providers: NextAuthConfig['providers'] = [];
+
+if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+  providers.push(
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     }),
-  ],
+  );
+}
+
+export const authConfig: NextAuthConfig = {
+  providers,
   pages: {
     signIn: '/login',
   },

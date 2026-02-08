@@ -14,7 +14,7 @@ interface PaymentStatusResponse {
   paidAt: string | null;
 }
 
-function getMockData(amount: number, description: string): CreatePaymentResponse {
+function getMockData(_amount: number, _description: string): CreatePaymentResponse {
   const mockId = `MOCK-${Date.now()}`;
   const mockQrText = `00020126580014br.gov.bcb.pix0136mock-pix-key-${mockId}5204000053039865802BR5913MOCK EMPRESA6008BRASILIA62070503***6304`;
   // Simple placeholder base64 for a tiny 1x1 white PNG as QR code mock

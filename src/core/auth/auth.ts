@@ -1,11 +1,44 @@
 import NextAuth from 'next-auth';
+import Credentials from 'next-auth/providers/credentials';
 import { PrismaAdapter } from '@auth/prisma-adapter';
 import { prisma } from '@/lib/prisma';
 import { authConfig } from './auth.config';
 
+const devProviders: typeof authConfig.providers = [];
+
+if (process.env.NODE_ENV !== 'production') {
+  devProviders.push(
+    Credentials({
+      name: 'Dev Login',
+      credentials: {
+        email: { label: 'Email', type: 'email' },
+        password: { label: 'Senha', type: 'password' },
+      },
+      async authorize(credentials) {
+        const email = credentials?.email as string;
+        const password = credentials?.password as string;
+        if (!email || password !== 'dev12345') return null;
+
+        let user = await prisma.user.findUnique({ where: { email } });
+        if (!user) {
+          user = await prisma.user.create({
+            data: {
+              email,
+              name: email.split('@')[0],
+              provider: 'credentials',
+            },
+          });
+        }
+        return { id: user.id, email: user.email, name: user.name };
+      },
+    }),
+  );
+}
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
   ...authConfig,
+  providers: [...authConfig.providers, ...devProviders],
   callbacks: {
     ...authConfig.callbacks,
     async jwt({ token, user, trigger }) {

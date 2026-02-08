@@ -1,0 +1,62 @@
+schema: 1
+story: "6.1"
+story_title: "Integracao WhatsApp Business - Envio de Mensagens"
+gate: CONCERNS
+status_reason: "Core functionality implemented correctly with good test coverage (29 tests). Webhook endpoint lacks authentication - any external actor can forge delivery events. Phone validation too lenient."
+reviewer: "Quinn (Test Architect)"
+updated: "2026-02-07T17:30:00Z"
+
+waiver: { active: false }
+
+quality_score: 70
+expires: "2026-02-21T00:00:00Z"
+
+top_issues:
+  - id: "SEC-001"
+    severity: high
+    finding: "Webhook endpoint /api/webhooks/whatsapp has no authentication or signature validation"
+    suggested_action: "Add HMAC-SHA256 signature verification using WHATSAPP_API_TOKEN"
+    suggested_owner: dev
+  - id: "SEC-002"
+    severity: medium
+    finding: "Phone number validation accepts any 10+ char string including letters and special chars"
+    suggested_action: "Add regex validation /^\\d{10,15}$/ to sendWhatsAppSchema"
+    suggested_owner: dev
+  - id: "ERR-001"
+    severity: medium
+    finding: "Webhook handler returns 200 OK for all errors including malformed payloads"
+    suggested_action: "Log errors and return appropriate HTTP status codes (400, 500)"
+    suggested_owner: dev
+
+evidence:
+  tests_reviewed: 29
+  risks_identified: 3
+  trace:
+    ac_covered: [1, 2, 3, 5, 6, 7]
+    ac_gaps: [4] # WhatsApp buttons only added to vendas, not NFe/orcamentos/contas-receber
+
+nfr_validation:
+  security:
+    status: CONCERNS
+    notes: "Webhook lacks authentication; template vars not sanitized"
+  performance:
+    status: PASS
+    notes: "Paginated queries, proper indexes"
+  reliability:
+    status: PASS
+    notes: "Mock mode fallback, error handling in service layer"
+  maintainability:
+    status: PASS
+    notes: "Clean service-layer architecture, well-organized modules"
+
+recommendations:
+  immediate:
+    - action: "Add webhook signature validation"
+      refs: ["src/app/api/webhooks/whatsapp/route.ts"]
+    - action: "Tighten phone number validation"
+      refs: ["src/modules/whatsapp/whatsapp.schema.ts"]
+  future:
+    - action: "Add WhatsApp buttons to NFe, orcamentos, contas-receber pages"
+      refs: ["src/app/(dashboard)/fiscal/page.tsx", "src/app/(dashboard)/vendas/orcamentos/"]
+    - action: "Encrypt sensitive template variables at rest"
+      refs: ["src/modules/whatsapp/whatsapp.service.ts"]

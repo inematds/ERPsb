@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, CheckCircle2, XCircle, Plus, FileText, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -41,7 +41,7 @@ const STATUS_COLORS: Record<string, string> = {
 
 export default function VendaDetailPage() {
   const params = useParams();
-  const router = useRouter();
+
   const [venda, setVenda] = useState<VendaDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [cancelling, setCancelling] = useState(false);

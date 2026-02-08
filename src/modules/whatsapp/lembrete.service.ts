@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { sendLembreteVencimento } from './whatsapp.service';
-import { formatCurrency } from '@/lib/formatters';
+
 import type { UpdateLembreteConfigInput } from './lembrete.schema';
 
 export async function getLembreteConfig(tenantId: string) {

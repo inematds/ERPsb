@@ -1,0 +1,45 @@
+schema: 1
+story: "6.5"
+story_title: "Polish Final e Preparacao para Beta"
+gate: PASS
+status_reason: "Critical Toaster bug fixed. All 10 dashboard pages now have consistent error handling. Empty states and SEO metatags properly implemented. E2E and Lighthouse deferred with valid justification."
+reviewer: "Quinn (Test Architect)"
+updated: "2026-02-07T17:30:00Z"
+
+waiver: { active: false }
+
+quality_score: 85
+expires: "2026-02-21T00:00:00Z"
+
+top_issues: []
+
+evidence:
+  tests_reviewed: 413
+  risks_identified: 0
+  trace:
+    ac_covered: [1, 2, 3, 4, 5]
+    ac_gaps: [6, 7] # E2E tests and Lighthouse audit deferred (documented)
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: "No security changes in this story"
+  performance:
+    status: PASS
+    notes: "Cosmetic/UX changes only"
+  reliability:
+    status: PASS
+    notes: "Error handling improved across all pages"
+  maintainability:
+    status: PASS
+    notes: "Consistent patterns across all dashboard pages"
+
+recommendations:
+  immediate: []
+  future:
+    - action: "Set up Playwright and write E2E tests for critical flows"
+      refs: ["package.json"]
+    - action: "Run Lighthouse audit after deployment"
+      refs: []
+    - action: "Add per-page metadata exports for better SEO"
+      refs: ["src/app/(dashboard)/*/page.tsx"]

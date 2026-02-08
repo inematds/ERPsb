@@ -1,0 +1,45 @@
+schema: 1
+story: "6.4"
+story_title: "PWA Completo e Offline Basico"
+gate: PASS
+status_reason: "PWA foundation properly implemented with manifest, install prompt hook, and offline indicator. Service worker and offline data correctly deferred as MVP simplification. Good test coverage for hooks (12 tests)."
+reviewer: "Quinn (Test Architect)"
+updated: "2026-02-07T17:30:00Z"
+
+waiver: { active: false }
+
+quality_score: 85
+expires: "2026-02-21T00:00:00Z"
+
+top_issues: []
+
+evidence:
+  tests_reviewed: 12
+  risks_identified: 0
+  trace:
+    ac_covered: [1, 3, 5, 6]
+    ac_gaps: [2, 4] # Service worker and offline data deferred (documented)
+
+nfr_validation:
+  security:
+    status: PASS
+    notes: "Client-side only, no sensitive data"
+  performance:
+    status: PASS
+    notes: "Lightweight hooks with proper cleanup"
+  reliability:
+    status: PASS
+    notes: "Proper event listener cleanup on unmount"
+  maintainability:
+    status: PASS
+    notes: "Clean hooks with TypeScript interfaces"
+
+recommendations:
+  immediate: []
+  future:
+    - action: "Replace SVG placeholder icons with proper PNG icons"
+      refs: ["public/icons/"]
+    - action: "Add service worker for offline caching when ready"
+      refs: ["next.config.ts"]
+    - action: "Persist InstallBanner dismiss state in localStorage"
+      refs: ["src/components/shared/install-banner.tsx"]

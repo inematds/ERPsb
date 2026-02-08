@@ -38,7 +38,7 @@ const REGIMES = [
 ];
 
 export default function ConfigFiscalPage() {
-  const [config, setConfig] = useState<ConfigFiscal | null>(null);
+  const [_config, setConfig] = useState<ConfigFiscal | null>(null);
   const [certStatus, setCertStatus] = useState<CertificateStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
