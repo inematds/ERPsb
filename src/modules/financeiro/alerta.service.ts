@@ -8,6 +8,11 @@ import {
   subMonths,
 } from 'date-fns';
 
+function toNum(val: bigint | number | null | undefined): number {
+  if (val == null) return 0;
+  return Number(val);
+}
+
 export type AlertSeverity = 'critical' | 'warning' | 'info';
 
 export interface Alert {
@@ -73,12 +78,12 @@ export async function getAlertas(): Promise<Alert[]> {
     ]),
   ]);
 
-  const saldo = (saldoData[0]._sum.amount ?? 0) - (saldoData[1]._sum.amount ?? 0);
+  const saldo = toNum(saldoData[0]._sum.amount) - toNum(saldoData[1]._sum.amount);
   const alertas: Alert[] = [];
 
   // Alerta 1: Contas vencidas
-  const qtdVencidas = contasVencidas._count.id ?? 0;
-  const totalVencidas = contasVencidas._sum.amount ?? 0;
+  const qtdVencidas = Number(contasVencidas._count.id ?? 0);
+  const totalVencidas = toNum(contasVencidas._sum.amount);
   if (qtdVencidas > 0) {
     alertas.push({
       type: 'contas_vencidas',
@@ -90,7 +95,7 @@ export async function getAlertas(): Promise<Alert[]> {
   }
 
   // Alerta 2: Contas proximos 7 dias vs saldo (so se > 50% do saldo)
-  const totalProximas7d = contasProximas7d._sum.amount ?? 0;
+  const totalProximas7d = toNum(contasProximas7d._sum.amount);
   if (totalProximas7d > 0 && saldo > 0 && totalProximas7d > saldo * 0.5) {
     alertas.push({
       type: 'contas_proximos_7_dias',
@@ -120,8 +125,8 @@ export async function getAlertas(): Promise<Alert[]> {
     }),
   ]);
 
-  const despPrev = despesasPrevistas30d._sum.amount ?? 0;
-  const recPrev = receitasPrevistas30d._sum.amount ?? 0;
+  const despPrev = toNum(despesasPrevistas30d._sum.amount);
+  const recPrev = toNum(receitasPrevistas30d._sum.amount);
   if (despPrev > recPrev && despPrev > 0) {
     alertas.push({
       type: 'caixa_apertado_30_dias',
@@ -162,8 +167,8 @@ export async function calcularQuantoPossoRetirar(): Promise<number> {
     getReceitaMediaMensal(),
   ]);
 
-  const saldoAtual = (saldoRecebido._sum.amount ?? 0) - (saldoPago._sum.amount ?? 0);
-  const pendente30d = contasPagar30d._sum.amount ?? 0;
+  const saldoAtual = toNum(saldoRecebido._sum.amount) - toNum(saldoPago._sum.amount);
+  const pendente30d = toNum(contasPagar30d._sum.amount);
   const reservaSeguranca = Math.round(receitaMedia * 0.10);
 
   const retiravel = saldoAtual - pendente30d - reservaSeguranca;
@@ -187,7 +192,7 @@ async function getReceitaMediaMensal(): Promise<number> {
       _sum: { amount: true },
     });
 
-    meses.push(result._sum.amount ?? 0);
+    meses.push(toNum(result._sum.amount));
   }
 
   const total = meses.reduce((sum, v) => sum + v, 0);
@@ -220,7 +225,7 @@ export async function getResumoMensal(): Promise<{ receitas: number; despesas: n
   ]);
 
   return {
-    receitas: receitas._sum.amount ?? 0,
-    despesas: despesas._sum.amount ?? 0,
+    receitas: toNum(receitas._sum.amount),
+    despesas: toNum(despesas._sum.amount),
   };
 }

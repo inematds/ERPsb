@@ -11,6 +11,12 @@ import {
   format,
 } from 'date-fns';
 
+/** Convert BigInt/null from Prisma aggregate to number */
+function toNum(val: bigint | number | null | undefined): number {
+  if (val == null) return 0;
+  return Number(val);
+}
+
 export type SemaforoLevel = 'VERDE' | 'AMARELO' | 'VERMELHO';
 
 export interface SemaforoStatus {
@@ -152,22 +158,22 @@ export async function getDashboardData(): Promise<DashboardData> {
     getCashFlowChart(30),
   ]);
 
-  const saldo = (totalRecebido._sum.amount ?? 0) - (totalPago._sum.amount ?? 0);
-  const despesasMesValue = despesasMes._sum.amount ?? 0;
+  const saldo = (toNum(totalRecebido._sum.amount)) - (toNum(totalPago._sum.amount));
+  const despesasMesValue = toNum(despesasMes._sum.amount);
   const semaforo = getSemaforoStatus(saldo, despesasMesValue);
 
   return {
     saldo,
     semaforo,
-    receitasHoje: receitasHoje._sum.amount ?? 0,
-    despesasHoje: despesasHoje._sum.amount ?? 0,
-    receitasSemana: receitasSemana._sum.amount ?? 0,
-    despesasSemana: despesasSemana._sum.amount ?? 0,
-    receitasMes: receitasMes._sum.amount ?? 0,
+    receitasHoje: toNum(receitasHoje._sum.amount),
+    despesasHoje: toNum(despesasHoje._sum.amount),
+    receitasSemana: toNum(receitasSemana._sum.amount),
+    despesasSemana: toNum(despesasSemana._sum.amount),
+    receitasMes: toNum(receitasMes._sum.amount),
     despesasMes: despesasMesValue,
     pendentes: {
-      totalPagar: pendentePagar._sum.amount ?? 0,
-      totalReceber: pendenteReceber._sum.amount ?? 0,
+      totalPagar: toNum(pendentePagar._sum.amount),
+      totalReceber: toNum(pendenteReceber._sum.amount),
     },
     upcoming: {
       contasPagar: upcomingPagar.map((c) => ({
@@ -270,8 +276,8 @@ export async function getPendingTotals() {
   ]);
 
   return {
-    totalPagar: totalPagar._sum.amount ?? 0,
-    totalReceber: totalReceber._sum.amount ?? 0,
+    totalPagar: toNum(totalPagar._sum.amount),
+    totalReceber: toNum(totalReceber._sum.amount),
   };
 }
 
