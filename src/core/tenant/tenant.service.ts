@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client';
 import { basePrisma } from '@/lib/prisma';
 
 export interface CreateTenantInput {
@@ -10,7 +11,7 @@ export interface CreateTenantInput {
 }
 
 export async function createTenant(userId: string, input: CreateTenantInput) {
-  const tenant = await basePrisma.$transaction(async (tx) => {
+  const tenant = await basePrisma.$transaction(async (tx: Prisma.TransactionClient) => {
     // Deactivate all existing tenants for user
     await tx.userTenant.updateMany({
       where: { userId },
