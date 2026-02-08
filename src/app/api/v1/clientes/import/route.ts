@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
       select: { phone: true },
     });
 
-    const existingPhones = new Set(existing.map((e) => normalizePhone(e.phone)));
+    const existingPhones = new Set(existing.map((e: { phone: string }) => normalizePhone(e.phone)));
 
     // Filter out duplicates
     const newContacts = contacts.filter(
