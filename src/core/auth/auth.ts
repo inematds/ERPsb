@@ -6,7 +6,7 @@ import { authConfig } from './auth.config';
 
 const devProviders: typeof authConfig.providers = [];
 
-if (process.env.NODE_ENV !== 'production') {
+if (process.env.ENABLE_DEV_LOGIN === 'true' || process.env.NODE_ENV !== 'production') {
   devProviders.push(
     Credentials({
       name: 'Dev Login',
