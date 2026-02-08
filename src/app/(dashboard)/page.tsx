@@ -31,16 +31,39 @@ export default function DashboardPage() {
         ]);
 
         if (dashRes.ok) {
-          const json = await dashRes.json();
-          setData(json.data);
+          const contentType = dashRes.headers.get('content-type') ?? '';
+          if (contentType.includes('application/json')) {
+            const json = await dashRes.json();
+            setData(json.data);
+          } else {
+            console.error('[Dashboard] Expected JSON but got:', contentType);
+            toast.error('Sessao expirada. Recarregue a pagina.');
+          }
         } else {
-          toast.error('Erro ao carregar dashboard');
+          const errorBody = await dashRes.text().catch(() => '');
+          console.error('[Dashboard] API error:', dashRes.status, errorBody);
+          if (dashRes.status === 401) {
+            toast.error('Sessao expirada. Faca login novamente.');
+          } else if (dashRes.status === 403) {
+            toast.error('Sem tenant ativo. Contate o administrador.');
+          } else {
+            toast.error(`Erro ao carregar dashboard (${dashRes.status})`);
+          }
         }
         if (alertRes.ok) {
-          const json = await alertRes.json();
-          setAlertasData(json.data);
+          const contentType = alertRes.headers.get('content-type') ?? '';
+          if (contentType.includes('application/json')) {
+            const json = await alertRes.json();
+            setAlertasData(json.data);
+          } else {
+            console.error('[Alertas] Expected JSON but got:', contentType);
+          }
+        } else {
+          const errorBody = await alertRes.text().catch(() => '');
+          console.error('[Alertas] API error:', alertRes.status, errorBody);
         }
-      } catch {
+      } catch (error) {
+        console.error('[Dashboard] Fetch error:', error);
         toast.error('Erro ao carregar dados');
       } finally {
         setLoading(false);

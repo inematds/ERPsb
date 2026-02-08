@@ -36,19 +36,29 @@ export const authConfig: NextAuthConfig = {
     },
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
-      const isOnDashboard = !nextUrl.pathname.startsWith('/login') &&
-        !nextUrl.pathname.startsWith('/api/auth') &&
-        !nextUrl.pathname.startsWith('/api/health') &&
-        !nextUrl.pathname.startsWith('/api/webhooks') &&
-        !nextUrl.pathname.startsWith('/api/debug');
+      const isPublicPath = nextUrl.pathname.startsWith('/login') ||
+        nextUrl.pathname.startsWith('/api/auth') ||
+        nextUrl.pathname.startsWith('/api/health') ||
+        nextUrl.pathname.startsWith('/api/webhooks') ||
+        nextUrl.pathname.startsWith('/api/debug');
 
-      if (isOnDashboard) {
-        if (isLoggedIn) return true;
-        return false; // Redirect to login
-      } else if (isLoggedIn && nextUrl.pathname.startsWith('/login')) {
-        return Response.redirect(new URL('/', nextUrl));
+      if (isPublicPath) {
+        // Redirect logged-in users away from login page
+        if (isLoggedIn && nextUrl.pathname.startsWith('/login')) {
+          return Response.redirect(new URL('/', nextUrl));
+        }
+        return true;
       }
-      return true;
+
+      // Protected routes
+      if (isLoggedIn) return true;
+
+      // API routes: return JSON 401 instead of HTML redirect
+      if (nextUrl.pathname.startsWith('/api/')) {
+        return Response.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+
+      return false; // Redirect pages to login
     },
   },
 };

@@ -35,22 +35,32 @@ export async function withTenantApi(
   _request: NextRequest,
   handler: (tenantId: string, userId: string) => Promise<NextResponse>,
 ): Promise<NextResponse> {
-  const session = await auth();
+  try {
+    const session = await auth();
 
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!session?.user?.id) {
+      console.warn('[withTenantApi] No session or user.id. Session:', JSON.stringify(session));
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const userTenant = await basePrisma.userTenant.findFirst({
+      where: { userId: session.user.id, isActive: true },
+      select: { tenantId: true },
+    });
+
+    if (!userTenant) {
+      console.warn('[withTenantApi] No active tenant for user:', session.user.id);
+      return NextResponse.json({ error: 'No active tenant' }, { status: 403 });
+    }
+
+    return runWithTenant(userTenant.tenantId, () =>
+      handler(userTenant.tenantId, session.user.id),
+    );
+  } catch (error) {
+    console.error('[withTenantApi] Error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error', detail: error instanceof Error ? error.message : String(error) },
+      { status: 500 },
+    );
   }
-
-  const userTenant = await basePrisma.userTenant.findFirst({
-    where: { userId: session.user.id, isActive: true },
-    select: { tenantId: true },
-  });
-
-  if (!userTenant) {
-    return NextResponse.json({ error: 'No active tenant' }, { status: 403 });
-  }
-
-  return runWithTenant(userTenant.tenantId, () =>
-    handler(userTenant.tenantId, session.user.id),
-  );
 }
