@@ -39,7 +39,8 @@ export const authConfig: NextAuthConfig = {
       const isOnDashboard = !nextUrl.pathname.startsWith('/login') &&
         !nextUrl.pathname.startsWith('/api/auth') &&
         !nextUrl.pathname.startsWith('/api/health') &&
-        !nextUrl.pathname.startsWith('/api/webhooks');
+        !nextUrl.pathname.startsWith('/api/webhooks') &&
+        !nextUrl.pathname.startsWith('/api/debug');
 
       if (isOnDashboard) {
         if (isLoggedIn) return true;
