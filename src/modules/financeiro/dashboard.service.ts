@@ -196,7 +196,7 @@ export function getSemaforoStatus(saldo: number, despesasMes: number): SemaforoS
   if (despesasMes === 0) {
     return {
       level: 'VERDE',
-      diasCobertura: saldo <= 0 ? 0 : Infinity,
+      diasCobertura: saldo <= 0 ? 0 : 999,
       despesaMediaDiaria: 0,
     };
   }
