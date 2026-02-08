@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 
 // Use DIRECT_URL to bypass pgbouncer for bulk operations
 const prisma = new PrismaClient({
@@ -341,7 +341,7 @@ async function main() {
       tenantId: string;
       number: number;
       clientId: string | null;
-      items: unknown;
+      items: Prisma.InputJsonValue;
       subtotal: number;
       discount: number;
       total: number;
@@ -409,7 +409,7 @@ async function main() {
         tenantId,
         number: saleNumber++,
         clientId,
-        items: items as unknown as never,
+        items: items as Prisma.InputJsonValue,
         subtotal,
         discount,
         total,
