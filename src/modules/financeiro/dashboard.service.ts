@@ -75,86 +75,40 @@ export async function getDashboardData(): Promise<DashboardData> {
     lte: endOfMonth(now),
   };
 
-  const [
-    totalRecebido,
-    totalPago,
-    receitasHoje,
-    despesasHoje,
-    receitasSemana,
-    despesasSemana,
-    receitasMes,
-    despesasMes,
-    pendentePagar,
-    pendenteReceber,
-    upcomingPagar,
-    upcomingReceber,
-    chartData,
-  ] = await Promise.all([
-    // Saldo: total recebido historico
-    prisma.contaReceber.aggregate({
-      where: { status: 'RECEBIDO' },
-      _sum: { amount: true },
-    }),
-    // Saldo: total pago historico
-    prisma.contaPagar.aggregate({
-      where: { status: 'PAGO' },
-      _sum: { amount: true },
-    }),
-    // Receitas hoje
-    prisma.contaReceber.aggregate({
-      where: { status: 'RECEBIDO', receivedDate: hoje },
-      _sum: { amount: true },
-    }),
-    // Despesas hoje
-    prisma.contaPagar.aggregate({
-      where: { status: 'PAGO', paidDate: hoje },
-      _sum: { amount: true },
-    }),
-    // Receitas semana
-    prisma.contaReceber.aggregate({
-      where: { status: 'RECEBIDO', receivedDate: semana },
-      _sum: { amount: true },
-    }),
-    // Despesas semana
-    prisma.contaPagar.aggregate({
-      where: { status: 'PAGO', paidDate: semana },
-      _sum: { amount: true },
-    }),
-    // Receitas mes
-    prisma.contaReceber.aggregate({
-      where: { status: 'RECEBIDO', receivedDate: mes },
-      _sum: { amount: true },
-    }),
-    // Despesas mes
-    prisma.contaPagar.aggregate({
-      where: { status: 'PAGO', paidDate: mes },
-      _sum: { amount: true },
-    }),
-    // Total pendente a pagar
-    prisma.contaPagar.aggregate({
-      where: { status: { in: ['PENDENTE', 'VENCIDO'] } },
-      _sum: { amount: true },
-    }),
-    // Total pendente a receber
-    prisma.contaReceber.aggregate({
-      where: { status: { in: ['PENDENTE', 'VENCIDO'] } },
-      _sum: { amount: true },
-    }),
-    // Top 5 proximas a pagar
+  // Batch 1: Saldo + today/week aggregates (5 queries)
+  const [totalRecebido, totalPago, receitasHoje, despesasHoje, receitasSemana] =
+    await Promise.all([
+      prisma.contaReceber.aggregate({ where: { status: 'RECEBIDO' }, _sum: { amount: true } }),
+      prisma.contaPagar.aggregate({ where: { status: 'PAGO' }, _sum: { amount: true } }),
+      prisma.contaReceber.aggregate({ where: { status: 'RECEBIDO', receivedDate: hoje }, _sum: { amount: true } }),
+      prisma.contaPagar.aggregate({ where: { status: 'PAGO', paidDate: hoje }, _sum: { amount: true } }),
+      prisma.contaReceber.aggregate({ where: { status: 'RECEBIDO', receivedDate: semana }, _sum: { amount: true } }),
+    ]);
+
+  // Batch 2: Week/month + pending aggregates (5 queries)
+  const [despesasSemana, receitasMes, despesasMes, pendentePagar, pendenteReceber] =
+    await Promise.all([
+      prisma.contaPagar.aggregate({ where: { status: 'PAGO', paidDate: semana }, _sum: { amount: true } }),
+      prisma.contaReceber.aggregate({ where: { status: 'RECEBIDO', receivedDate: mes }, _sum: { amount: true } }),
+      prisma.contaPagar.aggregate({ where: { status: 'PAGO', paidDate: mes }, _sum: { amount: true } }),
+      prisma.contaPagar.aggregate({ where: { status: { in: ['PENDENTE', 'VENCIDO'] } }, _sum: { amount: true } }),
+      prisma.contaReceber.aggregate({ where: { status: { in: ['PENDENTE', 'VENCIDO'] } }, _sum: { amount: true } }),
+    ]);
+
+  // Batch 3: Upcoming lists + chart (3 queries)
+  const [upcomingPagar, upcomingReceber, chartData] = await Promise.all([
     prisma.contaPagar.findMany({
       where: { status: { in: ['PENDENTE', 'VENCIDO'] } },
       orderBy: { dueDate: 'asc' },
       take: 5,
       include: { supplier: { select: { name: true } } },
     }),
-    // Top 5 proximas a receber
     prisma.contaReceber.findMany({
       where: { status: { in: ['PENDENTE', 'VENCIDO'] } },
       orderBy: { dueDate: 'asc' },
       take: 5,
       include: { client: { select: { name: true } } },
     }),
-    // Chart data
     getCashFlowChart(30),
   ]);
 

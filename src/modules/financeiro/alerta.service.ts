@@ -177,29 +177,22 @@ export async function calcularQuantoPossoRetirar(): Promise<number> {
 
 async function getReceitaMediaMensal(): Promise<number> {
   const now = new Date();
-  const meses: number[] = [];
 
-  for (let i = 1; i <= 3; i++) {
-    const mesRef = subMonths(now, i);
-    const inicio = startOfMonth(mesRef);
-    const fim = endOfMonth(mesRef);
+  // Single query: aggregate last 3 months together
+  const tresMesesAtras = startOfMonth(subMonths(now, 3));
+  const fimMesPassado = endOfMonth(subMonths(now, 1));
 
-    const result = await prisma.contaReceber.aggregate({
-      where: {
-        status: 'RECEBIDO',
-        receivedDate: { gte: inicio, lte: fim },
-      },
-      _sum: { amount: true },
-    });
+  const result = await prisma.contaReceber.aggregate({
+    where: {
+      status: 'RECEBIDO',
+      receivedDate: { gte: tresMesesAtras, lte: fimMesPassado },
+    },
+    _sum: { amount: true },
+  });
 
-    meses.push(toNum(result._sum.amount));
-  }
-
-  const total = meses.reduce((sum, v) => sum + v, 0);
-  const mesesComDados = meses.filter((v) => v > 0).length;
-
-  if (mesesComDados === 0) return 0;
-  return Math.round(total / mesesComDados);
+  const total = toNum(result._sum.amount);
+  if (total === 0) return 0;
+  return Math.round(total / 3);
 }
 
 export async function getResumoMensal(): Promise<{ receitas: number; despesas: number }> {
