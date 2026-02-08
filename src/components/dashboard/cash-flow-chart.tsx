@@ -47,12 +47,22 @@ function CustomTooltip({
 }
 
 function formatYAxis(value: number): string {
-  if (value >= 100000) return `${(value / 100000).toFixed(0)}k`;
-  if (value >= 10000) return `${(value / 100).toFixed(0)}`;
-  return `${(value / 100).toFixed(0)}`;
+  const reais = value / 100;
+  if (reais >= 1000) return `R$${(reais / 1000).toFixed(0)}k`;
+  return `R$${reais.toFixed(0)}`;
 }
 
 export function CashFlowChart({ data }: CashFlowChartProps) {
+  const hasData = data.some((d) => d.receitas > 0 || d.despesas > 0);
+
+  if (!hasData) {
+    return (
+      <div className="flex h-[250px] items-center justify-center text-sm text-muted-foreground sm:h-[300px]">
+        Sem movimentacoes nos ultimos 30 dias
+      </div>
+    );
+  }
+
   return (
     <div className="h-[250px] w-full sm:h-[300px]">
       <ResponsiveContainer width="100%" height="100%">
