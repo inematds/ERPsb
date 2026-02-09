@@ -60,43 +60,74 @@ export interface ChartDataPoint {
   despesas: number;
 }
 
-export async function getDashboardData(): Promise<DashboardData> {
-  const now = new Date();
-  const hoje = {
-    gte: startOfDay(now),
-    lte: endOfDay(now),
-  };
-  const semana = {
-    gte: startOfWeek(now, { weekStartsOn: 1 }),
-    lte: endOfWeek(now, { weekStartsOn: 1 }),
-  };
-  const mes = {
-    gte: startOfMonth(now),
-    lte: endOfMonth(now),
-  };
+export interface DashboardSaldoData {
+  saldo: number;
+  semaforo: SemaforoStatus;
+}
 
-  // Batch 1: Saldo + today/week aggregates (5 queries)
-  const [totalRecebido, totalPago, receitasHoje, despesasHoje, receitasSemana] =
+export interface DashboardResumoData {
+  receitasHoje: number;
+  despesasHoje: number;
+  receitasSemana: number;
+  despesasSemana: number;
+  receitasMes: number;
+  despesasMes: number;
+}
+
+export interface DashboardPendentesData {
+  pendentes: { totalPagar: number; totalReceber: number };
+  upcoming: { contasPagar: UpcomingConta[]; contasReceber: UpcomingConta[] };
+}
+
+/** Saldo + semaforo (2 queries - fastest) */
+export async function getDashboardSaldo(): Promise<DashboardSaldoData> {
+  const now = new Date();
+  const mes = { gte: startOfMonth(now), lte: endOfMonth(now) };
+
+  const [totalRecebido, totalPago, despesasMes] = await Promise.all([
+    prisma.contaReceber.aggregate({ where: { status: 'RECEBIDO' }, _sum: { amount: true } }),
+    prisma.contaPagar.aggregate({ where: { status: 'PAGO' }, _sum: { amount: true } }),
+    prisma.contaPagar.aggregate({ where: { status: 'PAGO', paidDate: mes }, _sum: { amount: true } }),
+  ]);
+
+  const saldo = toNum(totalRecebido._sum.amount) - toNum(totalPago._sum.amount);
+  const semaforo = getSemaforoStatus(saldo, toNum(despesasMes._sum.amount));
+
+  return { saldo, semaforo };
+}
+
+/** Resumo hoje/semana/mes (6 queries) */
+export async function getDashboardResumo(): Promise<DashboardResumoData> {
+  const now = new Date();
+  const hoje = { gte: startOfDay(now), lte: endOfDay(now) };
+  const semana = { gte: startOfWeek(now, { weekStartsOn: 1 }), lte: endOfWeek(now, { weekStartsOn: 1 }) };
+  const mes = { gte: startOfMonth(now), lte: endOfMonth(now) };
+
+  const [receitasHoje, despesasHoje, receitasSemana, despesasSemana, receitasMes, despesasMes] =
     await Promise.all([
-      prisma.contaReceber.aggregate({ where: { status: 'RECEBIDO' }, _sum: { amount: true } }),
-      prisma.contaPagar.aggregate({ where: { status: 'PAGO' }, _sum: { amount: true } }),
       prisma.contaReceber.aggregate({ where: { status: 'RECEBIDO', receivedDate: hoje }, _sum: { amount: true } }),
       prisma.contaPagar.aggregate({ where: { status: 'PAGO', paidDate: hoje }, _sum: { amount: true } }),
       prisma.contaReceber.aggregate({ where: { status: 'RECEBIDO', receivedDate: semana }, _sum: { amount: true } }),
-    ]);
-
-  // Batch 2: Week/month + pending aggregates (5 queries)
-  const [despesasSemana, receitasMes, despesasMes, pendentePagar, pendenteReceber] =
-    await Promise.all([
       prisma.contaPagar.aggregate({ where: { status: 'PAGO', paidDate: semana }, _sum: { amount: true } }),
       prisma.contaReceber.aggregate({ where: { status: 'RECEBIDO', receivedDate: mes }, _sum: { amount: true } }),
       prisma.contaPagar.aggregate({ where: { status: 'PAGO', paidDate: mes }, _sum: { amount: true } }),
-      prisma.contaPagar.aggregate({ where: { status: { in: ['PENDENTE', 'VENCIDO'] } }, _sum: { amount: true } }),
-      prisma.contaReceber.aggregate({ where: { status: { in: ['PENDENTE', 'VENCIDO'] } }, _sum: { amount: true } }),
     ]);
 
-  // Batch 3: Upcoming lists + chart (3 queries)
-  const [upcomingPagar, upcomingReceber, chartData] = await Promise.all([
+  return {
+    receitasHoje: toNum(receitasHoje._sum.amount),
+    despesasHoje: toNum(despesasHoje._sum.amount),
+    receitasSemana: toNum(receitasSemana._sum.amount),
+    despesasSemana: toNum(despesasSemana._sum.amount),
+    receitasMes: toNum(receitasMes._sum.amount),
+    despesasMes: toNum(despesasMes._sum.amount),
+  };
+}
+
+/** Pendentes + upcoming (4 queries) */
+export async function getDashboardPendentes(): Promise<DashboardPendentesData> {
+  const [pendentePagar, pendenteReceber, upcomingPagar, upcomingReceber] = await Promise.all([
+    prisma.contaPagar.aggregate({ where: { status: { in: ['PENDENTE', 'VENCIDO'] } }, _sum: { amount: true } }),
+    prisma.contaReceber.aggregate({ where: { status: { in: ['PENDENTE', 'VENCIDO'] } }, _sum: { amount: true } }),
     prisma.contaPagar.findMany({
       where: { status: { in: ['PENDENTE', 'VENCIDO'] } },
       orderBy: { dueDate: 'asc' },
@@ -109,44 +140,39 @@ export async function getDashboardData(): Promise<DashboardData> {
       take: 5,
       include: { client: { select: { name: true } } },
     }),
-    getCashFlowChart(30),
   ]);
 
-  const saldo = (toNum(totalRecebido._sum.amount)) - (toNum(totalPago._sum.amount));
-  const despesasMesValue = toNum(despesasMes._sum.amount);
-  const semaforo = getSemaforoStatus(saldo, despesasMesValue);
-
   return {
-    saldo,
-    semaforo,
-    receitasHoje: toNum(receitasHoje._sum.amount),
-    despesasHoje: toNum(despesasHoje._sum.amount),
-    receitasSemana: toNum(receitasSemana._sum.amount),
-    despesasSemana: toNum(despesasSemana._sum.amount),
-    receitasMes: toNum(receitasMes._sum.amount),
-    despesasMes: despesasMesValue,
     pendentes: {
       totalPagar: toNum(pendentePagar._sum.amount),
       totalReceber: toNum(pendenteReceber._sum.amount),
     },
     upcoming: {
       contasPagar: upcomingPagar.map((c) => ({
-        id: c.id,
-        description: c.description,
-        amount: c.amount,
-        dueDate: c.dueDate,
-        status: c.status,
-        entityName: c.supplier?.name ?? null,
+        id: c.id, description: c.description, amount: c.amount,
+        dueDate: c.dueDate, status: c.status, entityName: c.supplier?.name ?? null,
       })),
       contasReceber: upcomingReceber.map((c) => ({
-        id: c.id,
-        description: c.description,
-        amount: c.amount,
-        dueDate: c.dueDate,
-        status: c.status,
-        entityName: c.client?.name ?? null,
+        id: c.id, description: c.description, amount: c.amount,
+        dueDate: c.dueDate, status: c.status, entityName: c.client?.name ?? null,
       })),
     },
+  };
+}
+
+/** Full dashboard data (legacy - used by old endpoint) */
+export async function getDashboardData(): Promise<DashboardData> {
+  const [saldoData, resumoData, pendentesData, chartData] = await Promise.all([
+    getDashboardSaldo(),
+    getDashboardResumo(),
+    getDashboardPendentes(),
+    getCashFlowChart(30),
+  ]);
+
+  return {
+    ...saldoData,
+    ...resumoData,
+    ...pendentesData,
     chartData,
   };
 }

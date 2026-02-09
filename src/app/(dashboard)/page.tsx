@@ -2,78 +2,72 @@
 
 import Link from 'next/link';
 import useSWR from 'swr';
-import { TrendingUp, TrendingDown, ArrowRight, AlertCircle } from 'lucide-react';
+import { TrendingUp, TrendingDown, ArrowRight } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Semaforo } from '@/components/dashboard/semaforo';
 import { CashFlowChart } from '@/components/dashboard/cash-flow-chart';
 import { AlertCards } from '@/components/dashboard/alert-cards';
 import { WithdrawalCard } from '@/components/dashboard/withdrawal-card';
 import { MonthlySummary } from '@/components/dashboard/monthly-summary';
-import { DashboardSkeleton } from '@/components/shared/loading-skeleton';
-import { EmptyState } from '@/components/shared/empty-state';
 import { formatCurrency } from '@/lib/formatters';
-import type { DashboardData } from '@/modules/financeiro/dashboard.service';
+import type {
+  DashboardSaldoData,
+  DashboardResumoData,
+  DashboardPendentesData,
+  ChartDataPoint,
+} from '@/modules/financeiro/dashboard.service';
 import type { AlertasData } from '@/modules/financeiro/alerta.service';
 
+const SWR_OPTS = { dedupingInterval: 30_000, revalidateOnFocus: false };
+
 export default function DashboardPage() {
-  const { data, isLoading: loadingDash } = useSWR<DashboardData>(
-    '/api/v1/dashboard',
-    { dedupingInterval: 30_000, revalidateOnFocus: false },
-  );
-  const { data: alertasData } = useSWR<AlertasData>(
-    '/api/v1/alertas',
-    { dedupingInterval: 30_000, revalidateOnFocus: false },
-  );
-
-  if (loadingDash) {
-    return (
-      <div className="space-y-6">
-        <h1 className="text-2xl font-bold">Dashboard</h1>
-        <DashboardSkeleton />
-      </div>
-    );
-  }
-
-  if (!data) {
-    return (
-      <div className="space-y-6">
-        <h1 className="text-2xl font-bold">Dashboard</h1>
-        <EmptyState
-          icon={AlertCircle}
-          title="Erro ao carregar dados"
-          description="Nao foi possivel carregar o dashboard. Tente recarregar a pagina."
-        />
-      </div>
-    );
-  }
+  const { data: saldo } = useSWR<DashboardSaldoData>('/api/v1/dashboard/saldo', SWR_OPTS);
+  const { data: resumo } = useSWR<DashboardResumoData>('/api/v1/dashboard/resumo', SWR_OPTS);
+  const { data: pendentes } = useSWR<DashboardPendentesData>('/api/v1/dashboard/pendentes', SWR_OPTS);
+  const { data: chartData } = useSWR<ChartDataPoint[]>('/api/v1/dashboard/chart', { dedupingInterval: 60_000, revalidateOnFocus: false });
+  const { data: alertasData } = useSWR<AlertasData>('/api/v1/alertas', SWR_OPTS);
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Dashboard</h1>
+      {/* Header com versao */}
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Dashboard</h1>
+        <span className="text-xs text-muted-foreground">ERPsb v1.2.1</span>
+      </div>
 
       {/* Alertas proativos */}
       {alertasData && alertasData.alertas.length > 0 && (
         <AlertCards alertas={alertasData.alertas} />
       )}
 
-      {/* Semaforo + Saldo */}
+      {/* Semaforo + Saldo — carrega primeiro */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <Semaforo level={data.semaforo.level} diasCobertura={data.semaforo.diasCobertura} />
-        <Card>
-          <CardContent className="flex flex-col justify-center py-4">
-            <p className="text-sm text-muted-foreground">Saldo atual</p>
-            <p className={`text-2xl font-bold ${data.saldo < 0 ? 'text-red-600' : 'text-green-600'}`}>
-              {formatCurrency(data.saldo)}
-            </p>
-          </CardContent>
-        </Card>
+        {saldo ? (
+          <>
+            <Semaforo level={saldo.semaforo.level} diasCobertura={saldo.semaforo.diasCobertura} />
+            <Card>
+              <CardContent className="flex flex-col justify-center py-4">
+                <p className="text-sm text-muted-foreground">Saldo atual</p>
+                <p className={`text-2xl font-bold ${saldo.saldo < 0 ? 'text-red-600' : 'text-green-600'}`}>
+                  {formatCurrency(saldo.saldo)}
+                </p>
+              </CardContent>
+            </Card>
+          </>
+        ) : (
+          <>
+            <Card><CardContent className="py-4"><Skeleton className="h-16 w-full" /></CardContent></Card>
+            <Card><CardContent className="py-4"><Skeleton className="h-16 w-full" /></CardContent></Card>
+          </>
+        )}
       </div>
 
       {/* Quanto posso retirar + Resumo mensal */}
-      {alertasData && (
+      {alertasData && saldo && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <WithdrawalCard amount={alertasData.quantoPossoRetirar} saldo={data.saldo} />
+          <WithdrawalCard amount={alertasData.quantoPossoRetirar} saldo={saldo.saldo} />
           <MonthlySummary
             receitas={alertasData.resumoMensal.receitas}
             despesas={alertasData.resumoMensal.despesas}
@@ -83,67 +77,87 @@ export default function DashboardPage() {
 
       {/* Resumo: Hoje / Semana / Mes */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <SummaryCard
-          title="Hoje"
-          receitas={data.receitasHoje}
-          despesas={data.despesasHoje}
-        />
-        <SummaryCard
-          title="Semana"
-          receitas={data.receitasSemana}
-          despesas={data.despesasSemana}
-        />
-        <SummaryCard
-          title="Mes"
-          receitas={data.receitasMes}
-          despesas={data.despesasMes}
-        />
+        {resumo ? (
+          <>
+            <SummaryCard title="Hoje" receitas={resumo.receitasHoje} despesas={resumo.despesasHoje} />
+            <SummaryCard title="Semana" receitas={resumo.receitasSemana} despesas={resumo.despesasSemana} />
+            <SummaryCard title="Mes" receitas={resumo.receitasMes} despesas={resumo.despesasMes} />
+          </>
+        ) : (
+          <>
+            <Card><CardContent className="py-4 space-y-2"><Skeleton className="h-4 w-16" /><Skeleton className="h-4 w-24" /><Skeleton className="h-4 w-24" /></CardContent></Card>
+            <Card><CardContent className="py-4 space-y-2"><Skeleton className="h-4 w-16" /><Skeleton className="h-4 w-24" /><Skeleton className="h-4 w-24" /></CardContent></Card>
+            <Card><CardContent className="py-4 space-y-2"><Skeleton className="h-4 w-16" /><Skeleton className="h-4 w-24" /><Skeleton className="h-4 w-24" /></CardContent></Card>
+          </>
+        )}
       </div>
 
       {/* Totais pendentes */}
       <div className="grid grid-cols-2 gap-4">
-        <Card>
-          <CardContent className="py-4">
-            <p className="text-sm text-muted-foreground">A pagar</p>
-            <p className="text-xl font-bold text-red-600">
-              {formatCurrency(data.pendentes.totalPagar)}
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="py-4">
-            <p className="text-sm text-muted-foreground">A receber</p>
-            <p className="text-xl font-bold text-green-600">
-              {formatCurrency(data.pendentes.totalReceber)}
-            </p>
-          </CardContent>
-        </Card>
+        {pendentes ? (
+          <>
+            <Card>
+              <CardContent className="py-4">
+                <p className="text-sm text-muted-foreground">A pagar</p>
+                <p className="text-xl font-bold text-red-600">
+                  {formatCurrency(pendentes.pendentes.totalPagar)}
+                </p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="py-4">
+                <p className="text-sm text-muted-foreground">A receber</p>
+                <p className="text-xl font-bold text-green-600">
+                  {formatCurrency(pendentes.pendentes.totalReceber)}
+                </p>
+              </CardContent>
+            </Card>
+          </>
+        ) : (
+          <>
+            <Card><CardContent className="py-4"><Skeleton className="h-4 w-16 mb-2" /><Skeleton className="h-6 w-28" /></CardContent></Card>
+            <Card><CardContent className="py-4"><Skeleton className="h-4 w-16 mb-2" /><Skeleton className="h-6 w-28" /></CardContent></Card>
+          </>
+        )}
       </div>
 
-      {/* Grafico */}
+      {/* Grafico — carrega por ultimo */}
       <Card>
         <CardHeader>
           <CardTitle>Fluxo de Caixa - Ultimos 30 dias</CardTitle>
         </CardHeader>
         <CardContent>
-          <CashFlowChart data={data.chartData} />
+          {chartData ? (
+            <CashFlowChart data={chartData} />
+          ) : (
+            <Skeleton className="h-48 w-full" />
+          )}
         </CardContent>
       </Card>
 
       {/* Proximas contas */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <UpcomingSection
-          title="Proximas Contas a Pagar"
-          contas={data.upcoming.contasPagar}
-          href="/financeiro/contas-pagar"
-          variant="pagar"
-        />
-        <UpcomingSection
-          title="Proximos Recebimentos"
-          contas={data.upcoming.contasReceber}
-          href="/financeiro/contas-receber"
-          variant="receber"
-        />
+        {pendentes ? (
+          <>
+            <UpcomingSection
+              title="Proximas Contas a Pagar"
+              contas={pendentes.upcoming.contasPagar}
+              href="/financeiro/contas-pagar"
+              variant="pagar"
+            />
+            <UpcomingSection
+              title="Proximos Recebimentos"
+              contas={pendentes.upcoming.contasReceber}
+              href="/financeiro/contas-receber"
+              variant="receber"
+            />
+          </>
+        ) : (
+          <>
+            <Card><CardHeader><Skeleton className="h-5 w-40" /></CardHeader><CardContent><Skeleton className="h-24 w-full" /></CardContent></Card>
+            <Card><CardHeader><Skeleton className="h-5 w-40" /></CardHeader><CardContent><Skeleton className="h-24 w-full" /></CardContent></Card>
+          </>
+        )}
       </div>
     </div>
   );
