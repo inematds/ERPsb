@@ -73,6 +73,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (session.user && token.userId) {
         session.user.id = token.userId as string;
       }
+      session.activeTenantId = (token.activeTenantId as string) ?? null;
       return session;
     },
     async redirect({ url, baseUrl }) {

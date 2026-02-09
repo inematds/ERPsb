@@ -210,6 +210,8 @@ model ContaPagar {
 
   @@index([tenantId, status])
   @@index([tenantId, dueDate])
+  @@index([tenantId, supplierId])
+  @@index([tenantId, status, paidDate])
   @@map("contas_pagar")
 }
 
@@ -234,6 +236,9 @@ model ContaReceber {
 
   @@index([tenantId, status])
   @@index([tenantId, dueDate])
+  @@index([tenantId, clientId])
+  @@index([tenantId, saleId])
+  @@index([tenantId, status, receivedDate])
   @@map("contas_receber")
 }
 
@@ -309,6 +314,7 @@ model PixCharge {
 
   @@index([tenantId, status])
   @@index([contaReceberId])
+  @@index([externalId])
   @@map("pix_charges")
 }
 

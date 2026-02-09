@@ -5,6 +5,21 @@ import { basePrisma } from '@/lib/prisma';
 import { runWithTenant } from './tenant.context';
 
 /**
+ * Resolve tenantId from session JWT (fast) or fallback to DB query.
+ */
+async function resolveTenantId(session: { user: { id: string }; activeTenantId?: string | null }): Promise<string | null> {
+  if (session.activeTenantId) {
+    return session.activeTenantId;
+  }
+  // Fallback: query DB (only happens if JWT doesn't have tenantId yet)
+  const userTenant = await basePrisma.userTenant.findFirst({
+    where: { userId: session.user.id, isActive: true },
+    select: { tenantId: true },
+  });
+  return userTenant?.tenantId ?? null;
+}
+
+/**
  * Server-side middleware to extract and inject tenant context.
  * Use this in API routes and server actions.
  */
@@ -15,16 +30,13 @@ export async function withTenantContext<T>(fn: () => Promise<T>): Promise<T> {
     throw new Error('Authentication required');
   }
 
-  const userTenant = await basePrisma.userTenant.findFirst({
-    where: { userId: session.user.id, isActive: true },
-    select: { tenantId: true },
-  });
+  const tenantId = await resolveTenantId(session);
 
-  if (!userTenant) {
+  if (!tenantId) {
     throw new Error('No active tenant');
   }
 
-  return runWithTenant(userTenant.tenantId, fn);
+  return runWithTenant(tenantId, fn);
 }
 
 /**
@@ -43,18 +55,15 @@ export async function withTenantApi(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const userTenant = await basePrisma.userTenant.findFirst({
-      where: { userId: session.user.id, isActive: true },
-      select: { tenantId: true },
-    });
+    const tenantId = await resolveTenantId(session);
 
-    if (!userTenant) {
+    if (!tenantId) {
       console.warn('[withTenantApi] No active tenant for user:', session.user.id);
       return NextResponse.json({ error: 'No active tenant' }, { status: 403 });
     }
 
-    return runWithTenant(userTenant.tenantId, () =>
-      handler(userTenant.tenantId, session.user.id),
+    return runWithTenant(tenantId, () =>
+      handler(tenantId, session.user.id),
     );
   } catch (error) {
     console.error('[withTenantApi] Error:', error);

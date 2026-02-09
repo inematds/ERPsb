@@ -32,6 +32,7 @@ export const authConfig: NextAuthConfig = {
       if (session.user && token.userId) {
         session.user.id = token.userId as string;
       }
+      session.activeTenantId = (token.activeTenantId as string) ?? null;
       return session;
     },
     authorized({ auth, request: { nextUrl } }) {
