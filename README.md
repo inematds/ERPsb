@@ -1,5 +1,9 @@
 # ERPsb
 
+<p align="center">
+  <img src="doc/erpsb-banner.png" alt="ERPsb - Sistema Integrado de Gestao" width="700">
+</p>
+
 **O ERP que cresce com voce - do primeiro PIX ao primeiro milhao.**
 
 ERPsb e um sistema ERP SaaS **mobile-first** para **nanoempreendedores, MEIs e microempresas brasileiras** que hoje controlam seus negocios com papel, planilha e WhatsApp. Simplicidade radical: mais facil que planilha, entrega valor desde o primeiro dia.
