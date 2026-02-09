@@ -6,7 +6,7 @@ import { createFormaPagamento, listFormasPagamento } from '@/modules/cadastros/f
 export async function GET(request: NextRequest) {
   return withTenantApi(request, async () => {
     const data = await listFormasPagamento();
-    return NextResponse.json({ data });
+    return NextResponse.json({ data }, { headers: { 'Cache-Control': 'private, max-age=300' } });
   });
 }
 

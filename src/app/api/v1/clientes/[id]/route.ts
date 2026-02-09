@@ -15,7 +15,7 @@ export async function GET(
       return NextResponse.json({ error: 'Cliente not found' }, { status: 404 });
     }
 
-    return NextResponse.json({ data: cliente });
+    return NextResponse.json({ data: cliente }, { headers: { 'Cache-Control': 'private, max-age=10' } });
   });
 }
 

@@ -20,7 +20,10 @@ export async function GET(request: NextRequest) {
     }
 
     const result = await listClientes(parsed.data);
-    return NextResponse.json({ data: result.data, meta: { total: result.total, page: result.page, pageSize: result.pageSize } });
+    return NextResponse.json(
+      { data: result.data, meta: { total: result.total, page: result.page, pageSize: result.pageSize } },
+      { headers: { 'Cache-Control': 'private, max-age=10' } },
+    );
   });
 }
 

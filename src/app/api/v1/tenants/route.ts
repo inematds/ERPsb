@@ -23,7 +23,7 @@ export async function GET() {
   }
 
   const tenants = await listUserTenants(user.id);
-  return NextResponse.json({ data: tenants });
+  return NextResponse.json({ data: tenants }, { headers: { 'Cache-Control': 'private, max-age=300' } });
 }
 
 export async function POST(request: NextRequest) {

@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import useSWR from 'swr';
 import { TrendingUp, TrendingDown, ArrowRight, AlertCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -13,66 +13,20 @@ import { MonthlySummary } from '@/components/dashboard/monthly-summary';
 import { DashboardSkeleton } from '@/components/shared/loading-skeleton';
 import { EmptyState } from '@/components/shared/empty-state';
 import { formatCurrency } from '@/lib/formatters';
-import { toast } from 'sonner';
 import type { DashboardData } from '@/modules/financeiro/dashboard.service';
 import type { AlertasData } from '@/modules/financeiro/alerta.service';
 
 export default function DashboardPage() {
-  const [data, setData] = useState<DashboardData | null>(null);
-  const [alertasData, setAlertasData] = useState<AlertasData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { data, isLoading: loadingDash } = useSWR<DashboardData>(
+    '/api/v1/dashboard',
+    { dedupingInterval: 30_000, revalidateOnFocus: false },
+  );
+  const { data: alertasData } = useSWR<AlertasData>(
+    '/api/v1/alertas',
+    { dedupingInterval: 30_000, revalidateOnFocus: false },
+  );
 
-  useEffect(() => {
-    async function fetchAll() {
-      try {
-        const [dashRes, alertRes] = await Promise.all([
-          fetch('/api/v1/dashboard'),
-          fetch('/api/v1/alertas'),
-        ]);
-
-        if (dashRes.ok) {
-          const contentType = dashRes.headers.get('content-type') ?? '';
-          if (contentType.includes('application/json')) {
-            const json = await dashRes.json();
-            setData(json.data);
-          } else {
-            console.error('[Dashboard] Expected JSON but got:', contentType);
-            toast.error('Sessao expirada. Recarregue a pagina.');
-          }
-        } else {
-          const errorBody = await dashRes.text().catch(() => '');
-          console.error('[Dashboard] API error:', dashRes.status, errorBody);
-          if (dashRes.status === 401) {
-            toast.error('Sessao expirada. Faca login novamente.');
-          } else if (dashRes.status === 403) {
-            toast.error('Sem tenant ativo. Contate o administrador.');
-          } else {
-            toast.error(`Erro ao carregar dashboard (${dashRes.status})`);
-          }
-        }
-        if (alertRes.ok) {
-          const contentType = alertRes.headers.get('content-type') ?? '';
-          if (contentType.includes('application/json')) {
-            const json = await alertRes.json();
-            setAlertasData(json.data);
-          } else {
-            console.error('[Alertas] Expected JSON but got:', contentType);
-          }
-        } else {
-          const errorBody = await alertRes.text().catch(() => '');
-          console.error('[Alertas] API error:', alertRes.status, errorBody);
-        }
-      } catch (error) {
-        console.error('[Dashboard] Fetch error:', error);
-        toast.error('Erro ao carregar dados');
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchAll();
-  }, []);
-
-  if (loading) {
+  if (loadingDash) {
     return (
       <div className="space-y-6">
         <h1 className="text-2xl font-bold">Dashboard</h1>

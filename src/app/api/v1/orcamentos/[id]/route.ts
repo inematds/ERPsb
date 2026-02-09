@@ -15,7 +15,7 @@ export async function GET(
       return NextResponse.json({ error: 'Orcamento nao encontrado' }, { status: 404 });
     }
 
-    return NextResponse.json({ data: orcamento });
+    return NextResponse.json({ data: orcamento }, { headers: { 'Cache-Control': 'private, max-age=10' } });
   });
 }
 

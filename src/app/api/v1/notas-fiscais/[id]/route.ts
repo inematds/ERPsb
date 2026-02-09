@@ -14,6 +14,6 @@ export async function GET(
       return NextResponse.json({ error: 'Nota fiscal nao encontrada' }, { status: 404 });
     }
 
-    return NextResponse.json({ data: nota });
+    return NextResponse.json({ data: nota }, { headers: { 'Cache-Control': 'private, max-age=10' } });
   });
 }

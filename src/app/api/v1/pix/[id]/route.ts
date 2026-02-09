@@ -14,6 +14,6 @@ export async function GET(
       return NextResponse.json({ error: 'Cobranca PIX nao encontrada' }, { status: 404 });
     }
 
-    return NextResponse.json({ data: charge });
+    return NextResponse.json({ data: charge }, { headers: { 'Cache-Control': 'private, max-age=10' } });
   });
 }

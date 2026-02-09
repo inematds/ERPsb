@@ -19,7 +19,7 @@ export async function GET(
       return NextResponse.json({ error: 'Fornecedor not found' }, { status: 404 });
     }
 
-    return NextResponse.json({ data: fornecedor });
+    return NextResponse.json({ data: fornecedor }, { headers: { 'Cache-Control': 'private, max-age=10' } });
   });
 }
 

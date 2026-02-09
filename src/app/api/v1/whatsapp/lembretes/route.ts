@@ -6,7 +6,7 @@ import { getLembreteConfig, upsertLembreteConfig } from '@/modules/whatsapp/lemb
 export async function GET(request: NextRequest) {
   return withTenantApi(request, async (tenantId) => {
     const config = await getLembreteConfig(tenantId);
-    return NextResponse.json({ data: config });
+    return NextResponse.json({ data: config }, { headers: { 'Cache-Control': 'private, max-age=60' } });
   });
 }
 

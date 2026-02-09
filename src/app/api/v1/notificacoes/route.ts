@@ -23,6 +23,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       data: result.data,
       meta: { total: result.total, page: result.page, pageSize: result.pageSize },
-    });
+    }, { headers: { 'Cache-Control': 'private, max-age=10' } });
   });
 }

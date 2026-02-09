@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       data: config,
       certificateStatus: certStatus,
-    });
+    }, { headers: { 'Cache-Control': 'private, max-age=300' } });
   });
 }
 

@@ -15,7 +15,7 @@ export async function GET(
       return NextResponse.json({ error: 'Conta nao encontrada' }, { status: 404 });
     }
 
-    return NextResponse.json({ data: conta });
+    return NextResponse.json({ data: conta }, { headers: { 'Cache-Control': 'private, max-age=10' } });
   });
 }
 

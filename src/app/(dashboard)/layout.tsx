@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { auth } from '@/core/auth/auth';
 import { SessionProvider } from 'next-auth/react';
+import { SWRProvider } from '@/lib/swr-config';
 import { Header } from '@/components/layout/header';
 import { BottomNav } from '@/components/layout/bottom-nav';
 import { Sidebar } from '@/components/layout/sidebar';
@@ -21,17 +22,19 @@ export default async function DashboardLayout({
 
   return (
     <SessionProvider session={session}>
-      <div className="min-h-screen bg-background">
-        <OfflineBanner />
-        <InstallBanner />
-        <Sidebar />
-        <Header />
-        <main className="pb-20 lg:pb-0 lg:pl-60">
-          <div className="mx-auto max-w-5xl p-4">{children}</div>
-        </main>
-        <BottomNav />
-        <Fab />
-      </div>
+      <SWRProvider>
+        <div className="min-h-screen bg-background">
+          <OfflineBanner />
+          <InstallBanner />
+          <Sidebar />
+          <Header />
+          <main className="pb-20 lg:pb-0 lg:pl-60">
+            <div className="mx-auto max-w-5xl p-4">{children}</div>
+          </main>
+          <BottomNav />
+          <Fab />
+        </div>
+      </SWRProvider>
     </SessionProvider>
   );
 }

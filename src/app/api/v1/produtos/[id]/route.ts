@@ -15,7 +15,7 @@ export async function GET(
       return NextResponse.json({ error: 'Produto not found' }, { status: 404 });
     }
 
-    return NextResponse.json({ data: produto });
+    return NextResponse.json({ data: produto }, { headers: { 'Cache-Control': 'private, max-age=10' } });
   });
 }
 

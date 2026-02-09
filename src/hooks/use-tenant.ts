@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback } from 'react';
+import useSWR from 'swr';
 
 interface TenantInfo {
   tenantId: string;
@@ -13,26 +14,16 @@ interface TenantInfo {
 }
 
 export function useTenant() {
-  const [tenants, setTenants] = useState<TenantInfo[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { data: tenants = [], isLoading, mutate } = useSWR<TenantInfo[]>(
+    '/api/v1/tenants',
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      dedupingInterval: 60_000, // 1 minute dedup
+    },
+  );
 
   const activeTenant = tenants.find((t) => t.isActive) ?? null;
-
-  const fetchTenants = useCallback(async () => {
-    try {
-      const res = await fetch('/api/v1/tenants');
-      if (res.ok) {
-        const json = await res.json();
-        setTenants(json.data);
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchTenants();
-  }, [fetchTenants]);
 
   const switchTenant = useCallback(
     async (tenantId: string) => {
@@ -43,12 +34,11 @@ export function useTenant() {
       });
 
       if (res.ok) {
-        await fetchTenants();
-        // Reload page to refresh server components with new tenant context
+        await mutate();
         window.location.reload();
       }
     },
-    [fetchTenants],
+    [mutate],
   );
 
   return {
