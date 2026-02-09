@@ -11,6 +11,11 @@ ERPsb e um sistema ERP SaaS **mobile-first** para **nanoempreendedores, MEIs e m
 ## Indice
 
 - [O que e](#o-que-e)
+- [Contexto de mercado](#contexto-de-mercado)
+- [Publico-alvo](#publico-alvo)
+- [Analise competitiva](#analise-competitiva)
+- [Modelo de negocio](#modelo-de-negocio)
+- [Roadmap](#roadmap)
 - [Funcionalidades](#funcionalidades)
 - [Stack tecnologica](#stack-tecnologica)
 - [Arquitetura](#arquitetura)
@@ -24,6 +29,8 @@ ERPsb e um sistema ERP SaaS **mobile-first** para **nanoempreendedores, MEIs e m
 - [Estrutura de pastas](#estrutura-de-pastas)
 - [Modulos](#modulos)
 - [API](#api)
+- [Planejamento e documentacao](#planejamento-e-documentacao)
+- [Metricas de sucesso](#metricas-de-sucesso)
 - [Licenca](#licenca)
 
 ---
@@ -40,6 +47,144 @@ O ERPsb resolve um problema real: **29% das pequenas empresas fecham nos primeir
 | **Dashboard Semaforo** | Verde/Amarelo/Vermelho - visual, sem numeros frios |
 | **Mobile-First** | 100% das operacoes essenciais no celular (PWA) |
 | **Multi-tenant** | Cada empresa tem seus dados isolados via Row-Level Security |
+
+---
+
+## Contexto de mercado
+
+O ERPsb nasce em um momento unico para o mercado brasileiro de gestao empresarial:
+
+| Dado | Fonte |
+|------|-------|
+| Mercado global de ERP: **US$ 62 bilhoes** ate 2026 (CAGR 7,52%) | Mordor Intelligence |
+| **33% das empresas brasileiras** pretendem trocar de ERP ate 2026 | Portal ERP |
+| **97% das empresas NAO estao preparadas** para a reforma tributaria (CBS/IBS) | Receita Federal |
+| Gastos com apps cloud no Brasil: **US$ 4,9 bi** em 2025 (+11%) | IDC |
+| **91% das PMEs** que adotaram IA reportaram aumento na receita | Microsoft/KPMG |
+| Brasil: **147 milhoes** de usuarios WhatsApp (2o maior mercado mundial) | Meta |
+| Volume Open Banking cresceu **246%** nos ultimos 12 meses | Banco Central |
+| **29% das pequenas empresas** fecham nos primeiros 5 anos por falta de gestao | Sebrae |
+
+### Reforma Tributaria 2026 (CBS/IBS)
+
+A partir de janeiro de 2026 comeca a implementacao de CBS + IBS (substituindo PIS, Cofins, ICMS, ISS, IPI). Periodo de transicao ate 2033. Todo ERP precisa suportar:
+
+- Emissao de documento fiscal eletronico com campos CBS/IBS
+- NFSe Nacional obrigatoria
+- Coexistencia de tributos antigos e novos
+
+**Isso cria uma janela de oportunidade unica** - a maioria dos ERPs existentes nao esta preparada, e 33% das empresas planejam trocar de sistema.
+
+---
+
+## Publico-alvo
+
+### Primario: Nanoempreendedor / MEI Iniciante
+
+- Faturamento: R$ 0 a R$ 81k/ano (limite MEI)
+- Idade: 25-55 anos
+- Ramo: servicos, comercio, alimentacao, beleza, manutencao
+- Gerencia **tudo pelo celular** (Android)
+- Nunca usou sistema de gestao
+- Cobra via PIX manual, anota vendas no caderno
+- Pergunta principal: *"Estou lucrando? Quanto posso retirar?"*
+
+### Secundario: Microempresa em Crescimento
+
+- Faturamento: R$ 81k a R$ 360k/ano (Simples Nacional)
+- 1-5 funcionarios
+- Ja tentou ERP mas desistiu pela complexidade
+- Precisa centralizar vendas, financeiro e fiscal
+
+### Terciario: Nanoempreendedor Informal
+
+- Nova categoria legal (ate R$ 40,5k/ano, sem CNPJ)
+- O ERPsb funciona em **Modo Informal** para atender esse publico
+
+---
+
+## Analise competitiva
+
+| Concorrente | Preco | Ponto Forte | Ponto Fraco |
+|-------------|-------|-------------|-------------|
+| **Bling** | R$ 55/mes | Marketplaces | Financeiro basico |
+| **Tiny ERP** | R$ 41/mes | Hub integracoes | Interface complexa |
+| **ContaAzul** | R$ 99/mes | Conciliacao bancaria | Caro, pouco e-commerce |
+| **Omie** | R$ 79/mes | CRM + WhatsApp | Complexo para micro |
+| **MarketUP** | Gratuito | Custo zero | Interface datada |
+| **GestaoClick** | R$ 59/mes | Multi-fiscal | Pouca integracao |
+
+### Gaps que NENHUM concorrente atende bem
+
+1. **Simplicidade real** - todos prometem, nenhum entrega para quem nunca usou ERP
+2. **Onboarding eficiente** - configuracao demora dias/semanas em todos
+3. **Mobile-first verdadeiro** - apps sao versoes empobrecidas do web
+4. **Suporte a informalidade** - todos assumem processos ja organizados e CNPJ
+5. **Precificacao inteligente** - nenhum calcula margem real com impostos + taxas
+6. **Compliance automatico** - nenhum prepara proativamente para mudancas fiscais
+
+### Diferenciais competitivos do ERPsb
+
+| # | Diferencial | vs Quem ganha | Esforco |
+|---|------------|---------------|---------|
+| 1 | Setup em 2 minutos (sem configuracao) | TODOS | Medio |
+| 2 | PIX nativo com conciliacao automatica | Bling, Tiny, GestaoClick | Medio |
+| 3 | WhatsApp integrado de verdade | Todos exceto Omie | Alto |
+| 4 | Dashboard semaforo (visual, nao numeros) | TODOS | Baixo |
+| 5 | Mobile-first real (PWA completo) | TODOS | Alto |
+| 6 | Compliance fiscal automatico (reforma 2026) | TODOS | Alto |
+| 7 | Plano gratuito real (nao trial de 30 dias) | Bling, ContaAzul, Omie | Baixo |
+| 8 | Modo informal (funciona sem CNPJ) | TODOS | Baixo |
+
+---
+
+## Modelo de negocio
+
+**Freemium + SaaS escalonado por faturamento:**
+
+| Plano | Faturamento | Preco | Inclui |
+|-------|-------------|-------|--------|
+| **Gratis** | Ate R$ 5k/mes | R$ 0 | Cadastros + Financeiro + 10 vendas/mes |
+| **Starter** | Ate R$ 20k/mes | R$ 49/mes | + Vendas ilimitadas + NFe + PIX |
+| **Growth** | Ate R$ 100k/mes | R$ 99/mes | + WhatsApp + Estoque + Relatorios |
+| **Pro** | Acima R$ 100k | R$ 199/mes | + IA + Marketplaces + Multi-usuario |
+
+**Principios:**
+- Preco baseado em **faturamento**, nao usuarios (justo para quem cresce)
+- Upgrade automatico sugerido quando atinge limite
+- Sem taxas ocultas ou modulos escondidos
+- Downgrade sem perda de dados
+
+---
+
+## Roadmap
+
+### Fase 1 - MVP Core (implementado)
+
+| Epic | Status | Descricao |
+|------|--------|-----------|
+| **1. Fundacao** | Concluido | Next.js 15 + PostgreSQL + Auth Google + Multi-tenant + Onboarding wizard |
+| **2. Cadastros** | Concluido | Clientes, Fornecedores, Produtos com formularios progressivos |
+| **3. Financeiro** | Concluido | Contas a pagar/receber + Dashboard semaforo + Alertas + "Quanto posso retirar?" |
+| **4. Vendas + PIX** | Concluido | Venda rapida + Orcamentos + Cobranca PIX via Mercado Pago + Webhooks |
+| **5. Fiscal** | Concluido | NFe + NFSe + NFCe via Focus NFe + Campos CBS/IBS |
+| **6. WhatsApp + Estoque** | Concluido | WhatsApp Business + Estoque simplificado + Lembretes automaticos |
+
+### Fase 2 - Diferenciacao (planejado)
+
+- IA assistente ("Quanto vendi em janeiro?")
+- Calculadora de precificacao inteligente
+- Relatorios gerenciais + DRE simplificada
+- Integracoes marketplaces (Mercado Livre, Shopee)
+- Open Finance (conciliacao bancaria automatica)
+
+### Fase 3 - Escala (planejado)
+
+- CRM basico
+- Centro de custo
+- BI / Analytics
+- App nativo (se metricas justificarem)
+- API publica para integracoes de terceiros
 
 ---
 
@@ -481,6 +626,70 @@ Todas as rotas da API estao sob `/api/v1/` e requerem autenticacao (exceto webho
 | `/api/v1/whatsapp/lembretes` | GET, PUT | Config de lembretes |
 | `/api/health` | GET | Health check |
 | `/api/debug/auth` | GET | Debug de autenticacao |
+
+---
+
+## Planejamento e documentacao
+
+O projeto possui documentacao completa de planejamento, pesquisa de mercado e arquitetura:
+
+### Conceito e mercado (`doc/`)
+
+| Documento | Descricao |
+|-----------|-----------|
+| [`doc/erp-sb.txt`](doc/erp-sb.txt) | Conceito original do projeto - principios, escopo MVP, sequencia de implantacao |
+| [`doc/analise-estrategica-erpsb.md`](doc/analise-estrategica-erpsb.md) | Analise de mercado, concorrencia (8 ERPs), gaps, recomendacoes, riscos |
+| [`doc/historico-pesquisa-completo.md`](doc/historico-pesquisa-completo.md) | 60+ fontes de pesquisa compiladas (Sebrae, Mordor, Portal ERP, etc.) |
+| [`doc/todo.md`](doc/todo.md) | Gestao geral do projeto e proximos passos |
+
+### Planejamento de produto (`docs/`)
+
+| Documento | Descricao |
+|-----------|-----------|
+| [`docs/brief.md`](docs/brief.md) | Project Brief completo - problema, solucao, publico, diferenciais |
+| [`docs/prd.md`](docs/prd.md) | PRD com **58 requisitos funcionais**, **27 NFRs**, 6 epics, 20+ stories |
+| [`docs/architecture.md`](docs/architecture.md) | Arquitetura tecnica completa (monolito modular DDD) |
+| [`docs/diagnostico-performance.md`](docs/diagnostico-performance.md) | Diagnostico de performance e plano de otimizacao |
+
+### Documentos shardados
+
+| Pasta | Conteudo |
+|-------|----------|
+| [`docs/prd/`](docs/prd/) | PRD dividido em 8 secoes (goals, requirements, UI, epics, etc.) |
+| [`docs/architecture/`](docs/architecture/) | Arquitetura em 18 documentos (tech stack, data models, API spec, workflows, etc.) |
+| [`docs/stories/`](docs/stories/) | **25 stories** detalhadas (1.1 a 6.5) com acceptance criteria |
+| [`docs/qa/`](docs/qa/) | Quality gates para validacao de stories |
+
+### Metodologia: BMad Method
+
+O projeto usa o **BMad Method** para planejamento agile orientado por IA:
+
+```
+Analyst (Brief) --> PM (PRD) --> Architect --> PO (Shard) --> Dev (Stories) --> QA
+     [x]              [x]          [x]           [x]            [x]          [x]
+```
+
+Todas as fases de planejamento foram concluidas. O MVP esta implementado e em producao.
+
+---
+
+## Metricas de sucesso
+
+| Metrica | Meta MVP | Meta 6 meses | Meta 1 ano |
+|---------|----------|-------------|------------|
+| Usuarios ativos (gratis) | 50 (beta) | 1.000 | 5.000 |
+| Usuarios pagos | 5 (beta) | 150 | 750 |
+| MRR | R$ 0 | R$ 7.500 | R$ 20.000 |
+| Time to Value | < 5 min | < 5 min | < 3 min |
+| DAU/MAU | > 30% | > 40% | > 45% |
+| NPS | > 30 | > 50 | > 60 |
+
+**Metricas tecnicas (NFRs):**
+- First Contentful Paint < 1.5s (4G)
+- Time to Interactive < 3s (4G)
+- API latencia media < 200ms
+- Dashboard carrega em < 2s
+- Disponibilidade 99.5%
 
 ---
 
