@@ -157,7 +157,7 @@ export function OnboardingWizard() {
               <StepCnpj
                 hasCnpj={data.hasCnpj}
                 cnpj={data.cnpj}
-                onHasCnpjChange={(v) => setData({ ...data, hasCnpj: v })}
+                onHasCnpjChange={(v) => setData({ ...data, hasCnpj: v, cnpj: v ? data.cnpj : '' })}
                 onCnpjChange={(v) => setData({ ...data, cnpj: v })}
               />
             )}
@@ -316,10 +316,7 @@ function StepCnpj({
           Sim
         </button>
         <button
-          onClick={() => {
-            onHasCnpjChange(false);
-            onCnpjChange('');
-          }}
+          onClick={() => onHasCnpjChange(false)}
           className={`min-h-[48px] flex-1 rounded-lg border-2 px-4 py-3 text-sm font-medium transition-colors ${
             hasCnpj === false
               ? 'border-primary bg-primary/10 text-primary'
