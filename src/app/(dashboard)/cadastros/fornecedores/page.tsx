@@ -9,6 +9,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { EmptyState } from '@/components/shared/empty-state';
 import { ListSkeleton } from '@/components/shared/loading-skeleton';
+import { PageHelp } from '@/components/shared/page-help';
 import { toast } from 'sonner';
 
 interface Fornecedor {
@@ -71,7 +72,10 @@ export default function FornecedoresPage() {
     return (
       <div className="p-4 space-y-4">
         <div className="flex items-center justify-between">
-          <h1 className="text-xl font-bold">Fornecedores</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl font-bold">Fornecedores</h1>
+            <PageHelp title="Fornecedores" description="Gerencie seus fornecedores. Vincule-os as contas a pagar para ter controle de quem voce deve." helpHref="/ajuda/cadastros" />
+          </div>
         </div>
         <ListSkeleton />
       </div>
@@ -81,7 +85,10 @@ export default function FornecedoresPage() {
   return (
     <div className="p-4 space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold">Fornecedores</h1>
+        <div className="flex items-center gap-2">
+          <h1 className="text-xl font-bold">Fornecedores</h1>
+          <PageHelp title="Fornecedores" description="Gerencie seus fornecedores. Vincule-os as contas a pagar para ter controle de quem voce deve." helpHref="/ajuda/cadastros" />
+        </div>
         <Button asChild size="sm">
           <Link href="/cadastros/fornecedores/novo">
             <Plus className="h-4 w-4 mr-1" />

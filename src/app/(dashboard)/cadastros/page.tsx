@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Users, Building2, Package, CreditCard } from 'lucide-react';
 import { Card } from '@/components/ui/card';
+import { PageHelp } from '@/components/shared/page-help';
 
 const SECTIONS = [
   {
@@ -32,9 +33,12 @@ const SECTIONS = [
 export default function CadastrosPage() {
   return (
     <div className="p-4 space-y-4">
-      <h1 className="text-xl font-bold flex items-center gap-2">
-        <Users className="h-5 w-5" /> Cadastros
-      </h1>
+      <div className="flex items-center gap-2">
+        <h1 className="text-xl font-bold flex items-center gap-2">
+          <Users className="h-5 w-5" /> Cadastros
+        </h1>
+        <PageHelp title="Cadastros" description="Gerencie seus clientes, fornecedores e produtos. Cadastros sao a base para vendas, financeiro e notas fiscais." helpHref="/ajuda/cadastros" />
+      </div>
 
       <div className="grid gap-3">
         {SECTIONS.map((section) => {

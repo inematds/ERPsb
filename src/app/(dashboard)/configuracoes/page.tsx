@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { PageHelp } from '@/components/shared/page-help';
 import { useTenant } from '@/hooks/use-tenant';
 
 export default function ConfiguracoesPage() {
@@ -21,7 +22,10 @@ export default function ConfiguracoesPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Configuracoes</h1>
+      <div className="flex items-center gap-2">
+        <h1 className="text-2xl font-bold">Configuracoes</h1>
+        <PageHelp title="Configuracoes" description="Configure formas de pagamento, lembretes automaticos via WhatsApp e dados da sua empresa." helpHref="/ajuda/configuracoes" />
+      </div>
 
       <Card>
         <CardHeader>

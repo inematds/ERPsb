@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { EmptyState } from '@/components/shared/empty-state';
 import { ListSkeleton } from '@/components/shared/loading-skeleton';
+import { PageHelp } from '@/components/shared/page-help';
 import { toast } from 'sonner';
 
 interface SaldoEstoque {
@@ -121,9 +122,12 @@ export default function EstoquePage() {
   return (
     <div className="p-4 space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold flex items-center gap-2">
-          <Package className="h-5 w-5" /> Estoque
-        </h1>
+        <div className="flex items-center gap-2">
+          <h1 className="text-xl font-bold flex items-center gap-2">
+            <Package className="h-5 w-5" /> Estoque
+          </h1>
+          <PageHelp title="Estoque" description="Controle entradas, saidas e ajustes de estoque. Receba alertas quando um produto atingir o estoque minimo." helpHref="/ajuda/estoque" />
+        </div>
         {alertas.length > 0 && (
           <Badge variant="destructive" className="flex items-center gap-1">
             <AlertTriangle className="h-3 w-3" />

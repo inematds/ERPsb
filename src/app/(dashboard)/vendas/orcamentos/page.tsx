@@ -9,6 +9,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { EmptyState } from '@/components/shared/empty-state';
 import { ListSkeleton } from '@/components/shared/loading-skeleton';
+import { PageHelp } from '@/components/shared/page-help';
 import { formatCurrency } from '@/lib/formatters';
 import { toast } from 'sonner';
 
@@ -94,7 +95,10 @@ export default function OrcamentosPage() {
     <div className="p-4 space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold">Orcamentos</h1>
+        <div className="flex items-center gap-2">
+          <h1 className="text-xl font-bold">Orcamentos</h1>
+          <PageHelp title="Orcamentos" description="Crie orcamentos e converta em venda com um clique. Defina validade e envie por WhatsApp." helpHref="/ajuda/vendas" />
+        </div>
         <Button size="sm" asChild>
           <Link href="/vendas/orcamentos/novo">
             <Plus className="h-4 w-4 mr-1" />

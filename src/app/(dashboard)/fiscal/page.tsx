@@ -8,6 +8,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { EmptyState } from '@/components/shared/empty-state';
 import { ListSkeleton } from '@/components/shared/loading-skeleton';
+import { PageHelp } from '@/components/shared/page-help';
 import { formatCurrency } from '@/lib/formatters';
 import { toast } from 'sonner';
 
@@ -145,9 +146,12 @@ export default function NotasFiscaisPage() {
   return (
     <div className="p-4 space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold flex items-center gap-2">
-          <FileText className="h-5 w-5" /> Notas Fiscais
-        </h1>
+        <div className="flex items-center gap-2">
+          <h1 className="text-xl font-bold flex items-center gap-2">
+            <FileText className="h-5 w-5" /> Notas Fiscais
+          </h1>
+          <PageHelp title="Fiscal" description="Emita notas fiscais (NFe, NFSe, NFCe) integradas com Focus NFe. Configure certificado digital e dados fiscais." helpHref="/ajuda/fiscal" />
+        </div>
         <Button variant="outline" size="sm" asChild>
           <Link href="/fiscal/config">Configuracao</Link>
         </Button>

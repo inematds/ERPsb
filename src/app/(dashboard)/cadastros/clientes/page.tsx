@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { EmptyState } from '@/components/shared/empty-state';
 import { ListSkeleton } from '@/components/shared/loading-skeleton';
+import { PageHelp } from '@/components/shared/page-help';
 import { toast } from 'sonner';
 
 interface Cliente {
@@ -127,7 +128,10 @@ export default function ClientesPage() {
     return (
       <div className="p-4 space-y-4">
         <div className="flex items-center justify-between">
-          <h1 className="text-xl font-bold">Clientes</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl font-bold">Clientes</h1>
+            <PageHelp title="Clientes" description="Lista de todos os seus clientes. Cadastre nome e telefone — os demais campos sao opcionais e aparecem conforme necessario." helpHref="/ajuda/cadastros" />
+          </div>
         </div>
         <ListSkeleton />
       </div>
@@ -137,7 +141,10 @@ export default function ClientesPage() {
   return (
     <div className="p-4 space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold">Clientes</h1>
+        <div className="flex items-center gap-2">
+          <h1 className="text-xl font-bold">Clientes</h1>
+          <PageHelp title="Clientes" description="Lista de todos os seus clientes. Cadastre nome e telefone — os demais campos sao opcionais e aparecem conforme necessario." helpHref="/ajuda/cadastros" />
+        </div>
         <div className="flex items-center gap-2">
           <Button
             variant="outline"

@@ -9,6 +9,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { EmptyState } from '@/components/shared/empty-state';
 import { ListSkeleton } from '@/components/shared/loading-skeleton';
+import { PageHelp } from '@/components/shared/page-help';
 import { formatCurrency } from '@/lib/formatters';
 import { toast } from 'sonner';
 
@@ -88,7 +89,10 @@ export default function VendasPage() {
     <div className="p-4 space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold">Vendas</h1>
+        <div className="flex items-center gap-2">
+          <h1 className="text-xl font-bold">Vendas</h1>
+          <PageHelp title="Vendas" description="Registre vendas de forma rapida — a meta e 30 segundos. Cada venda gera automaticamente uma conta a receber." helpHref="/ajuda/vendas" />
+        </div>
         <Button size="sm" asChild>
           <Link href="/vendas/nova">
             <Plus className="h-4 w-4 mr-1" />

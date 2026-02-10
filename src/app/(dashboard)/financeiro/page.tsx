@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Wallet, Receipt, HandCoins, QrCode } from 'lucide-react';
 import { Card } from '@/components/ui/card';
+import { PageHelp } from '@/components/shared/page-help';
 
 const SECTIONS = [
   {
@@ -26,9 +27,12 @@ const SECTIONS = [
 export default function FinanceiroPage() {
   return (
     <div className="p-4 space-y-4">
-      <h1 className="text-xl font-bold flex items-center gap-2">
-        <Wallet className="h-5 w-5" /> Financeiro
-      </h1>
+      <div className="flex items-center gap-2">
+        <h1 className="text-xl font-bold flex items-center gap-2">
+          <Wallet className="h-5 w-5" /> Financeiro
+        </h1>
+        <PageHelp title="Financeiro" description="Controle suas contas a pagar e receber. Acompanhe o fluxo de caixa e saiba quanto pode retirar." helpHref="/ajuda/financeiro" />
+      </div>
 
       <div className="grid gap-3">
         {SECTIONS.map((section) => {

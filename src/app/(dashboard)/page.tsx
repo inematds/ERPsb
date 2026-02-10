@@ -12,6 +12,7 @@ import { AlertCards } from '@/components/dashboard/alert-cards';
 import { WithdrawalCard } from '@/components/dashboard/withdrawal-card';
 import { MonthlySummary } from '@/components/dashboard/monthly-summary';
 import { formatCurrency } from '@/lib/formatters';
+import { PageHelp } from '@/components/shared/page-help';
 import type {
   DashboardSaldoData,
   DashboardResumoData,
@@ -33,8 +34,15 @@ export default function DashboardPage() {
     <div className="space-y-6">
       {/* Header com versao */}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Dashboard</h1>
-        <span className="text-xs text-muted-foreground">ERPsb v1.2.2</span>
+        <div className="flex items-center gap-2">
+          <h1 className="text-2xl font-bold">Dashboard</h1>
+          <PageHelp
+            title="Dashboard"
+            description="Visao geral da saude financeira do seu negocio. O semaforo indica se suas financas estao no verde, amarelo ou vermelho."
+            helpHref="/ajuda/dashboard"
+          />
+        </div>
+        <span className="text-xs text-muted-foreground">ERPsb v1.3.0</span>
       </div>
 
       {/* Alertas proativos */}

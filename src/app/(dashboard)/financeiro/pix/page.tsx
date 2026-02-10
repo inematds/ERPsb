@@ -8,6 +8,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { EmptyState } from '@/components/shared/empty-state';
 import { ListSkeleton } from '@/components/shared/loading-skeleton';
+import { PageHelp } from '@/components/shared/page-help';
 import { formatCurrency } from '@/lib/formatters';
 import { toast } from 'sonner';
 
@@ -115,7 +116,10 @@ export default function PixChargesPage() {
     return (
       <div className="p-4 space-y-4">
         <div className="flex items-center justify-between">
-          <h1 className="text-xl font-bold">Cobrancas PIX</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl font-bold">Cobrancas PIX</h1>
+            <PageHelp title="PIX" description="Gere cobrancas PIX com QR code para seus clientes. O pagamento e conciliado automaticamente via webhook." helpHref="/ajuda/pix" />
+          </div>
         </div>
         <ListSkeleton />
       </div>
@@ -125,7 +129,10 @@ export default function PixChargesPage() {
   return (
     <div className="p-4 space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold">Cobrancas PIX</h1>
+        <div className="flex items-center gap-2">
+          <h1 className="text-xl font-bold">Cobrancas PIX</h1>
+          <PageHelp title="PIX" description="Gere cobrancas PIX com QR code para seus clientes. O pagamento e conciliado automaticamente via webhook." helpHref="/ajuda/pix" />
+        </div>
       </div>
 
       {meta.total > 0 || statusFilter ? (

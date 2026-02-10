@@ -9,6 +9,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { EmptyState } from '@/components/shared/empty-state';
 import { ListSkeleton } from '@/components/shared/loading-skeleton';
+import { PageHelp } from '@/components/shared/page-help';
 import { formatCurrency } from '@/lib/formatters';
 import { toast } from 'sonner';
 
@@ -151,7 +152,10 @@ export default function ContasPagarPage() {
     return (
       <div className="p-4 space-y-4">
         <div className="flex items-center justify-between">
-          <h1 className="text-xl font-bold">Contas a Pagar</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl font-bold">Contas a Pagar</h1>
+            <PageHelp title="Contas a Pagar" description="Registre todas as despesas e contas do seu negocio. Marque como paga quando efetuar o pagamento." helpHref="/ajuda/financeiro" />
+          </div>
         </div>
         <ListSkeleton />
       </div>
@@ -161,7 +165,10 @@ export default function ContasPagarPage() {
   return (
     <div className="p-4 space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold">Contas a Pagar</h1>
+        <div className="flex items-center gap-2">
+          <h1 className="text-xl font-bold">Contas a Pagar</h1>
+          <PageHelp title="Contas a Pagar" description="Registre todas as despesas e contas do seu negocio. Marque como paga quando efetuar o pagamento." helpHref="/ajuda/financeiro" />
+        </div>
         <Button asChild size="sm">
           <Link href="/financeiro/contas-pagar/novo">
             <Plus className="h-4 w-4 mr-1" />
