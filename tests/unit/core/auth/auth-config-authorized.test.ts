@@ -67,28 +67,13 @@ describe('auth.config authorized callback', () => {
     });
   });
 
-  describe('authenticated users WITHOUT tenant', () => {
+  describe('authenticated users WITHOUT tenant (handled by layout, not middleware)', () => {
     const authNoTenant = { user: { id: 'u1' }, activeTenantId: null };
 
-    it('should redirect from / to /onboarding', () => {
+    // Middleware allows access — layout.tsx does the DB fallback + redirect
+    it('should allow access (tenant check delegated to layout)', () => {
       const result = callAuthorized(authNoTenant, '/');
-      expect(result).toBeInstanceOf(Response);
-      const response = result as Response;
-      expect(response.headers.get('location')).toContain('/onboarding');
-    });
-
-    it('should redirect from /financeiro to /onboarding', () => {
-      const result = callAuthorized(authNoTenant, '/financeiro/contas-pagar');
-      expect(result).toBeInstanceOf(Response);
-      const response = result as Response;
-      expect(response.headers.get('location')).toContain('/onboarding');
-    });
-
-    it('should redirect from /api/v1/dashboard to /onboarding', () => {
-      const result = callAuthorized(authNoTenant, '/api/v1/dashboard/saldo');
-      expect(result).toBeInstanceOf(Response);
-      const response = result as Response;
-      expect(response.headers.get('location')).toContain('/onboarding');
+      expect(result).toBe(true);
     });
 
     it('should allow access to /onboarding', () => {
@@ -96,22 +81,15 @@ describe('auth.config authorized callback', () => {
       expect(result).toBe(true);
     });
 
-    it('should allow access to /api/v1/onboarding', () => {
-      const result = callAuthorized(authNoTenant, '/api/v1/onboarding');
+    it('should allow access to API routes', () => {
+      const result = callAuthorized(authNoTenant, '/api/v1/dashboard/saldo');
       expect(result).toBe(true);
     });
 
-    it('should allow access to /api/v1/tenants', () => {
-      const result = callAuthorized(authNoTenant, '/api/v1/tenants');
-      expect(result).toBe(true);
-    });
-
-    it('should redirect when activeTenantId is undefined', () => {
+    it('should allow access when activeTenantId is undefined', () => {
       const authUndefined = { user: { id: 'u1' } };
       const result = callAuthorized(authUndefined, '/');
-      expect(result).toBeInstanceOf(Response);
-      const response = result as Response;
-      expect(response.headers.get('location')).toContain('/onboarding');
+      expect(result).toBe(true);
     });
   });
 
