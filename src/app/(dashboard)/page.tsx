@@ -34,7 +34,7 @@ export default function DashboardPage() {
       {/* Header com versao */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Dashboard</h1>
-        <span className="text-xs text-muted-foreground">ERPsb v1.2.1</span>
+        <span className="text-xs text-muted-foreground">ERPsb v1.2.2</span>
       </div>
 
       {/* Alertas proativos */}
