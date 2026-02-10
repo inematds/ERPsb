@@ -10,6 +10,7 @@ import {
   Settings,
   Package,
   Users,
+  HelpCircle,
 } from 'lucide-react';
 
 const SIDEBAR_ITEMS = [
@@ -20,6 +21,7 @@ const SIDEBAR_ITEMS = [
   { href: '/cadastros', label: 'Cadastros', icon: Users },
   { href: '/estoque', label: 'Estoque', icon: Package },
   { href: '/configuracoes', label: 'Configuracoes', icon: Settings },
+  { href: '/ajuda', label: 'Ajuda', icon: HelpCircle },
 ] as const;
 
 export function Sidebar() {

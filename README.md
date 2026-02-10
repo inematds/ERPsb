@@ -34,6 +34,7 @@ ERPsb e um sistema ERP SaaS **mobile-first** para **nanoempreendedores, MEIs e m
 - [Modulos](#modulos)
 - [API](#api)
 - [Planejamento e documentacao](#planejamento-e-documentacao)
+- [Documentacao por modulo](#documentacao-por-modulo)
 - [Metricas de sucesso](#metricas-de-sucesso)
 - [Licenca](#licenca)
 
@@ -174,18 +175,24 @@ A partir de janeiro de 2026 comeca a implementacao de CBS + IBS (substituindo PI
 | **5. Fiscal** | Concluido | NFe + NFSe + NFCe via Focus NFe + Campos CBS/IBS |
 | **6. WhatsApp + Estoque** | Concluido | WhatsApp Business + Estoque simplificado + Lembretes automaticos |
 
-### Fase 2 - Diferenciacao (planejado)
+### Fase 2 - Diferenciacao (v2.0 - planejado)
 
-- IA assistente ("Quanto vendi em janeiro?")
-- Calculadora de precificacao inteligente
-- Relatorios gerenciais + DRE simplificada
-- Integracoes marketplaces (Mercado Livre, Shopee)
-- Open Finance (conciliacao bancaria automatica)
+| Epic | Stories | Descricao |
+|------|---------|-----------|
+| **7. Captura Inteligente** | [7.1 - 7.5](docs/stories/) | Foto de nota/despesa → IA extrai dados → aprovacao com 1 clique. Via camera ou WhatsApp |
+| **8. CFO Virtual** | [8.1 - 8.4](docs/stories/) | Chat com IA que responde perguntas sobre o negocio ("Quanto vendi?", "Quem me deve?") |
+| **9. Precificacao Inteligente** | [9.1 - 9.3](docs/stories/) | Calculadora de preco, analise de margem real por produto, simulador de cenarios |
 
-### Fase 3 - Escala (planejado)
+### Fase 3 - Escala (v3.0 - planejado)
 
+| Epic | Stories | Descricao |
+|------|---------|-----------|
+| **10. Marketing e Vendas Online** | [10.1 - 10.5](docs/stories/) | Catalogo online publico, mini loja com carrinho + PIX, WhatsApp marketing, integracao Mercado Livre/Shopee/iFood |
+
+**Futuro (backlog):**
+- Conciliacao bancaria automatica (Open Finance)
+- Fluxo de caixa projetado com IA
 - CRM basico
-- Centro de custo
 - BI / Analytics
 - App nativo (se metricas justificarem)
 - API publica para integracoes de terceiros
@@ -694,6 +701,35 @@ Todas as fases de planejamento foram concluidas. O MVP esta implementado e em pr
 - API latencia media < 200ms
 - Dashboard carrega em < 2s
 - Disponibilidade 99.5%
+
+---
+
+## Documentacao por modulo
+
+O ERPsb possui documentacao integrada na aplicacao, acessivel em `/ajuda`. Abaixo o resumo de cada modulo:
+
+| Modulo | Descricao | App | Stories |
+|--------|-----------|-----|---------|
+| **Primeiros Passos** | Login, criacao de empresa, onboarding wizard | [`/ajuda/primeiros-passos`](https://erpsb.vercel.app/ajuda/primeiros-passos) | [Story 1.1 - 1.4](docs/stories/) |
+| **Dashboard** | Semaforo financeiro, saldo, alertas, grafico fluxo de caixa, "quanto posso retirar" | [`/ajuda/dashboard`](https://erpsb.vercel.app/ajuda/dashboard) | [Story 3.4 - 3.5](docs/stories/) |
+| **Cadastros** | Clientes, fornecedores, produtos, formas de pagamento | [`/ajuda/cadastros`](https://erpsb.vercel.app/ajuda/cadastros) | [Story 2.1 - 2.3](docs/stories/) |
+| **Financeiro** | Contas a pagar/receber, fluxo de caixa, baixa manual/automatica | [`/ajuda/financeiro`](https://erpsb.vercel.app/ajuda/financeiro) | [Story 3.1 - 3.3](docs/stories/) |
+| **Vendas** | Venda rapida, orcamentos, conversao em 1 clique | [`/ajuda/vendas`](https://erpsb.vercel.app/ajuda/vendas) | [Story 4.1 - 4.2](docs/stories/) |
+| **PIX** | Cobranca PIX via Mercado Pago, QR code, conciliacao automatica | [`/ajuda/pix`](https://erpsb.vercel.app/ajuda/pix) | [Story 4.3 - 4.4](docs/stories/) |
+| **Fiscal** | NFe, NFSe Nacional, NFCe via Focus NFe, certificado digital, CBS/IBS | [`/ajuda/fiscal`](https://erpsb.vercel.app/ajuda/fiscal) | [Story 5.1 - 5.3](docs/stories/) |
+| **Estoque** | Entradas, saidas automaticas, ajustes manuais, alerta de minimo | [`/ajuda/estoque`](https://erpsb.vercel.app/ajuda/estoque) | [Story 6.3 - 6.4](docs/stories/) |
+| **WhatsApp** | Envio de cobrancas, orcamentos, NFe e lembretes automaticos | [`/ajuda/whatsapp`](https://erpsb.vercel.app/ajuda/whatsapp) | [Story 6.1 - 6.2](docs/stories/) |
+| **Configuracoes** | Formas de pagamento, lembretes, dados da empresa, config fiscal | [`/ajuda/configuracoes`](https://erpsb.vercel.app/ajuda/configuracoes) | [Story 2.3, 6.5](docs/stories/) |
+
+### Documentacao tecnica
+
+| Documento | Descricao |
+|-----------|-----------|
+| [`docs/prd.md`](docs/prd.md) | PRD completo (58 requisitos funcionais, 27 NFRs) |
+| [`docs/architecture.md`](docs/architecture.md) | Arquitetura tecnica (monolito modular DDD) |
+| [`docs/stories/`](docs/stories/) | 25 stories detalhadas com acceptance criteria |
+| [`docs/brief.md`](docs/brief.md) | Project Brief - problema, solucao, diferenciais |
+| [`docs/diagnostico-performance.md`](docs/diagnostico-performance.md) | Diagnostico e plano de otimizacao |
 
 ---
 
