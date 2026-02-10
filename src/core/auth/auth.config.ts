@@ -52,7 +52,21 @@ export const authConfig: NextAuthConfig = {
       }
 
       // Protected routes
-      if (isLoggedIn) return true;
+      if (isLoggedIn) {
+        // Check if user has a tenant (from JWT); redirect to onboarding if not
+        const hasTenant = !!(auth as { activeTenantId?: string | null })?.activeTenantId;
+        if (!hasTenant) {
+          // Allow access to onboarding and tenant/onboarding API routes without tenant
+          const noTenantAllowed =
+            nextUrl.pathname.startsWith('/onboarding') ||
+            nextUrl.pathname.startsWith('/api/v1/onboarding') ||
+            nextUrl.pathname.startsWith('/api/v1/tenants');
+          if (!noTenantAllowed) {
+            return Response.redirect(new URL('/onboarding', nextUrl));
+          }
+        }
+        return true;
+      }
 
       // API routes: return JSON 401 instead of HTML redirect
       if (nextUrl.pathname.startsWith('/api/')) {

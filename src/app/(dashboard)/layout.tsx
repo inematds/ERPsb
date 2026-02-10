@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
 import { auth } from '@/core/auth/auth';
+import { basePrisma } from '@/lib/prisma';
 import { SessionProvider } from 'next-auth/react';
 import { SWRProvider } from '@/lib/swr-config';
 import { Header } from '@/components/layout/header';
@@ -18,6 +19,19 @@ export default async function DashboardLayout({
 
   if (!session?.user?.id) {
     redirect('/login');
+  }
+
+  // Check if user has an active tenant; redirect to onboarding if not
+  let hasTenant = !!session.activeTenantId;
+  if (!hasTenant) {
+    const userTenant = await basePrisma.userTenant.findFirst({
+      where: { userId: session.user.id, isActive: true },
+      select: { tenantId: true },
+    });
+    hasTenant = !!userTenant;
+  }
+  if (!hasTenant) {
+    redirect('/onboarding');
   }
 
   return (
