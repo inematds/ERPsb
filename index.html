@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ERPsb — O ERP que cresce com você</title>
+<meta name="description" content="ERP SaaS mobile-first para nanoempreendedores, MEIs e microempresas brasileiras. PIX nativo, WhatsApp integrado e dashboard semáforo.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0c0c10; --bg2:#14141b; --card:#16161e; --line:#272730;
+    --txt:#e9e9ee; --mut:#9a9aa6; --amb:#E2A23B; --amb2:#f0c070; --sky:#38bdf8;
+    color-scheme:dark;
+  }
+  body.light{
+    --bg:#f6f7f9; --bg2:#eceef2; --card:#ffffff; --line:#e1e3ea;
+    --txt:#1a1a22; --mut:#5b5b68; --amb:#b9791d; --amb2:#a16207; --sky:#0369a1;
+    color-scheme:light;
+  }
+  body.light .hero .glow{opacity:.5}
+  body.light pre{background:#0e0e14;color:#d6d6e0}
+  body.light pre .c{color:#8a8a98}
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--txt);font:16px/1.65 Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  h1,h2,h3{font-family:Sora,sans-serif;line-height:1.15;margin:0}
+  a{color:var(--amb);text-decoration:none}
+  code,pre{font-family:"JetBrains Mono",monospace}
+  .wrap{max-width:1040px;margin:0 auto;padding:0 22px}
+  .mut{color:var(--mut)} .amb{color:var(--amb)}
+  .chip{display:inline-block;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--amb);font-weight:600;font-family:Sora}
+  nav{position:sticky;top:0;z-index:30;backdrop-filter:blur(12px);background:rgba(12,12,16,.78);border-bottom:1px solid var(--line)}
+  nav .wrap{display:flex;align-items:center;gap:22px;height:60px}
+  nav .brand{display:flex;align-items:center;gap:8px;font-family:Sora;font-weight:800;letter-spacing:-.02em;color:var(--amb)}
+  nav .brand .emoji{font-size:1.25rem}
+  nav .sep{color:var(--mut);opacity:.45}
+  nav .inema{color:var(--sky);font-weight:600;font-size:.88rem;font-family:Sora}
+  nav .inema:hover{filter:brightness(1.15)}
+  nav .links{margin-left:auto;display:flex;align-items:center;gap:20px;font-size:.92rem}
+  nav .links a.sec{color:var(--mut)} nav .links a.sec:hover{color:var(--txt)}
+  .tgl{background:var(--bg2);border:1px solid var(--line);color:var(--txt);width:38px;height:38px;border-radius:10px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:1.05rem}
+  .tgl:hover{border-color:var(--amb)}
+  .btn{display:inline-block;background:var(--amb);color:#1a1206;font-weight:600;padding:.6em 1.05em;border-radius:10px;font-family:Sora}
+  .btn.ghost{background:transparent;color:var(--txt);border:1px solid var(--line)}
+  @media(max-width:760px){nav .links a.sec{display:none}}
+  .hero{position:relative;overflow:hidden;border-bottom:1px solid var(--line)}
+  .hero .glow{position:absolute;inset:-40% -20% auto auto;width:70%;height:600px;background:radial-gradient(closest-side,rgba(226,162,59,.22),transparent 70%);pointer-events:none}
+  .hero .wrap{display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:center;padding:74px 22px}
+  .hero h1{font-size:clamp(2.2rem,5vw,3.5rem);font-weight:800;letter-spacing:-.025em}
+  .hero p.lead{font-size:1.18rem;color:var(--mut);margin:1.1em 0 1.6em;max-width:34ch}
+  .hero .cta{display:flex;gap:12px;flex-wrap:wrap}
+  .hero figure{margin:0;border-radius:16px;overflow:hidden;border:1px solid var(--line);box-shadow:0 30px 80px -30px #000}
+  .hero figure img{width:100%;display:block}
+  @media(max-width:780px){.hero .wrap{grid-template-columns:1fr;padding:48px 22px}}
+  section{padding:62px 0;border-bottom:1px solid var(--line)}
+  section h2{font-size:clamp(1.5rem,3.4vw,2.1rem);font-weight:800;letter-spacing:-.02em}
+  section .sub{color:var(--mut);margin:.6em 0 2em;max-width:62ch}
+  .grid{display:grid;gap:16px}
+  .g3{grid-template-columns:repeat(3,1fr)} .g4{grid-template-columns:repeat(4,1fr)} .g2{grid-template-columns:repeat(2,1fr)}
+  @media(max-width:820px){.g3,.g4{grid-template-columns:1fr 1fr}}
+  @media(max-width:540px){.g2,.g3,.g4{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px}
+  .card h3{font-size:1.05rem;margin-bottom:.4em}
+  .card p{color:var(--mut);font-size:.92rem;margin:0}
+  .num{display:inline-flex;width:30px;height:30px;align-items:center;justify-content:center;border-radius:8px;background:rgba(226,162,59,.14);color:var(--amb);font-family:Sora;font-weight:800;font-size:.9rem;margin-bottom:.7em}
+  .flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+  .flow span{background:var(--bg2);border:1px solid var(--line);border-radius:999px;padding:.45em .9em;font-size:.85rem;font-family:Sora;font-weight:600}
+  .flow .arr{color:var(--amb);border:none;background:none;padding:0 .1em}
+  pre{background:#0a0a0e;border:1px solid var(--line);border-radius:12px;padding:16px 18px;overflow:auto;font-size:.86rem;line-height:1.6;color:#d6d6e0}
+  pre .c{color:#6f6f7c} pre .k{color:var(--amb2)} pre .s{color:#9ece6a}
+  .step{display:grid;grid-template-columns:46px 1fr;gap:16px;margin-bottom:26px}
+  .step .b{width:46px;height:46px;border-radius:12px;background:var(--amb);color:#1a1206;font-family:Sora;font-weight:800;font-size:1.25rem;display:flex;align-items:center;justify-content:center}
+  .step h3{font-size:1.12rem;margin-bottom:.3em}
+  .step p{color:var(--mut);margin:.2em 0 .7em}
+  .ex{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  @media(max-width:680px){.ex{grid-template-columns:1fr}}
+  .ex figure{margin:0;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+  .ex figure img{width:100%;display:block}
+  .ex figcaption{padding:12px 14px;font-size:.88rem;color:var(--mut);background:var(--card)}
+  .phase{display:flex;gap:14px;padding:16px 0;border-bottom:1px solid var(--line)}
+  .phase:last-child{border:none}
+  .phase .tag{flex:0 0 92px;font-family:Sora;font-weight:800;color:var(--amb)}
+  .phase .d strong{display:block;margin-bottom:.2em}
+  .phase .d span{color:var(--mut);font-size:.92rem}
+  footer{padding:46px 0;text-align:center;color:var(--mut);font-size:.9rem}
+  .pill{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:.3em .8em;font-size:.78rem;color:var(--mut);margin:0 4px}
+</style>
+</head>
+<body>
+
+<nav><div class="wrap">
+  <a class="brand" href="#top"><span class="emoji">📊</span> ERPsb</a>
+  <span class="sep">|</span>
+  <a class="inema" href="https://inema.club" target="_blank" rel="noopener">INEMA.CLUB</a>
+  <div class="links">
+    <a class="sec" href="#oque">O que é</a>
+    <a class="sec" href="#fluxo">Como funciona</a>
+    <a class="sec" href="#guia">Guia de uso</a>
+    <a class="sec" href="#exemplos">Exemplos</a>
+    <a class="sec" href="#roadmap">Roadmap</a>
+    <button class="tgl" id="themeToggle" aria-label="Alternar tema" title="Alternar tema">🌙</button>
+    <a class="btn" href="https://github.com/inematds/ERPsb" target="_blank" rel="noopener">GitHub</a>
+  </div>
+</div></nav>
+
+<header class="hero" id="top">
+  <div class="glow"></div>
+  <div class="wrap">
+    <div>
+      <span class="chip">ERP SaaS · mobile-first</span>
+      <h1>O ERP que cresce com <span class="amb">você</span></h1>
+      <p class="lead">Do primeiro PIX ao primeiro milhão. Gestão simples para nanoempreendedores, MEIs e microempresas brasileiras.</p>
+      <div class="cta">
+        <a class="btn" href="#guia">Começar o guia</a>
+        <a class="btn ghost" href="https://github.com/inematds/ERPsb" target="_blank" rel="noopener">Ver no GitHub</a>
+      </div>
+    </div>
+    <figure style="border:none;box-shadow:none;background:none">
+<pre><span class="c"># clonar e rodar localmente</span>
+<span class="k">git clone</span> <span class="s">https://github.com/inematds/ERPsb.git</span>
+<span class="k">cd</span> ERPsb
+<span class="k">pnpm install</span>
+<span class="k">pnpm dev</span>  <span class="c"># Next.js em http://localhost:3000</span></pre>
+    </figure>
+  </div>
+</header>
+
+<section id="oque"><div class="wrap">
+  <span class="chip">O que é</span>
+  <h2>Mais fácil que planilha, valor desde o primeiro dia</h2>
+  <p class="sub">29% das pequenas empresas fecham nos primeiros 5 anos por falta de gestão. O ERPsb resolve isso com simplicidade radical: login, wizard de 5 perguntas e a primeira venda em 2 minutos.</p>
+  <div class="grid g3">
+    <div class="card"><h3>💸 PIX nativo</h3><p>Cobrança PIX com QR code e conciliação automática via Mercado Pago.</p></div>
+    <div class="card"><h3>💬 WhatsApp integrado</h3><p>Envio de cobranças, orçamentos e NFe pelo canal número 1 do Brasil.</p></div>
+    <div class="card"><h3>🚦 Dashboard semáforo</h3><p>Verde, amarelo, vermelho. Saber se está lucrando sem encarar números frios.</p></div>
+  </div>
+</div></section>
+
+<section id="fluxo"><div class="wrap">
+  <span class="chip">Como funciona</span>
+  <h2>Do cadastro à primeira venda</h2>
+  <p class="sub">Arquitetura multi-tenant com isolamento de dados por empresa (Row-Level Security). PWA mobile-first: 100% das operações essenciais funcionam no celular.</p>
+  <div class="flow">
+    <span>Login</span><span class="arr">→</span>
+    <span>Wizard de 5 perguntas</span><span class="arr">→</span>
+    <span>Cadastra produto/serviço</span><span class="arr">→</span>
+    <span>Cobra via PIX</span><span class="arr">→</span>
+    <span>Conciliação automática</span><span class="arr">→</span>
+    <span>Dashboard semáforo</span>
+  </div>
+</div></section>
+
+<section id="pre"><div class="wrap">
+  <span class="chip">Pré-requisitos</span>
+  <h2>O que você precisa antes de começar</h2>
+  <p class="sub">Stack Next.js + Prisma + PostgreSQL. Recomendado usar pnpm.</p>
+  <div class="grid g3">
+    <div class="card"><h3>Node.js + pnpm</h3><p>Node 18+ e pnpm para gerenciar dependências do projeto.</p><pre><span class="c"># verificar versões</span>
+<span class="k">node -v</span>
+<span class="k">pnpm -v</span></pre></div>
+    <div class="card"><h3>PostgreSQL</h3><p>Banco de dados via Prisma (local ou serviço gerenciado).</p><pre><span class="c"># copiar variáveis de ambiente</span>
+<span class="k">cp</span> .env.example .env</pre></div>
+    <div class="card"><h3>Mercado Pago</h3><p>Credenciais para PIX e conciliação automática de pagamentos.</p><pre><span class="c"># preencha no .env</span>
+MP_ACCESS_TOKEN=<span class="s">"seu-token"</span></pre></div>
+  </div>
+</div></section>
+
+<section id="guia"><div class="wrap">
+  <span class="chip">Guia de uso · passo a passo</span>
+  <h2>Rodando o ERPsb localmente</h2>
+  <p class="sub">Comandos reais do package.json. O postinstall já gera o Prisma Client automaticamente.</p>
+
+  <div class="step"><div class="b">1</div><div>
+    <h3>Clonar e instalar</h3>
+    <p>Baixe o repositório e instale dependências. O Prisma Client é gerado no postinstall.</p>
+<pre><span class="k">git clone</span> <span class="s">https://github.com/inematds/ERPsb.git</span>
+<span class="k">cd</span> ERPsb && <span class="k">pnpm install</span>  <span class="c"># roda prisma generate</span></pre>
+  </div></div>
+
+  <div class="step"><div class="b">2</div><div>
+    <h3>Configurar variáveis</h3>
+    <p>Copie o exemplo e preencha banco, Mercado Pago e Sentry.</p>
+<pre><span class="k">cp</span> .env.example .env  <span class="c"># edite DATABASE_URL e demais chaves</span></pre>
+  </div></div>
+
+  <div class="step"><div class="b">3</div><div>
+    <h3>Subir o banco</h3>
+    <p>Aplique o schema Prisma no PostgreSQL configurado.</p>
+<pre><span class="k">pnpm exec prisma migrate dev</span>  <span class="c"># cria as tabelas</span></pre>
+  </div></div>
+
+  <div class="step"><div class="b">4</div><div>
+    <h3>Rodar em desenvolvimento</h3>
+    <p>Servidor Next.js com Turbopack. Acesse no navegador ou no celular.</p>
+<pre><span class="k">pnpm dev</span>  <span class="c"># http://localhost:3000</span></pre>
+  </div></div>
+
+  <div class="step"><div class="b">5</div><div>
+    <h3>Qualidade e build</h3>
+    <p>Lint, checagem de tipos, testes (Vitest) e build de produção.</p>
+<pre><span class="k">pnpm lint</span> && <span class="k">pnpm type-check</span>
+<span class="k">pnpm test:run</span>  <span class="c"># testes Vitest</span>
+<span class="k">pnpm build</span>     <span class="c"># build de produção</span></pre>
+  </div></div>
+</div></section>
+
+<section id="exemplos"><div class="wrap">
+  <span class="chip">Exemplos</span>
+  <h2>Casos de uso reais</h2>
+  <p class="sub">Pensado para quem hoje controla o negócio com papel, planilha e WhatsApp.</p>
+  <div class="grid g2">
+    <div class="card"><h3>🛍️ MEI iniciante</h3><p>Anota vendas no caderno e cobra PIX manual. Com o ERPsb registra a venda e gera QR code de cobrança em segundos, com conciliação automática.</p></div>
+    <div class="card"><h3>📈 Micro em crescimento</h3><p>1 a 5 funcionários no Simples Nacional. Acompanha lucro pelo dashboard semáforo e responde "quanto posso retirar?" sem abrir planilha.</p></div>
+    <div class="card"><h3>🧾 Reforma tributária 2026</h3><p>Preparado para CBS/IBS e NFSe Nacional, na janela em que 33% das empresas planejam trocar de ERP.</p></div>
+    <div class="card"><h3>📱 Tudo no celular</h3><p>PWA mobile-first: cadastro, cobrança, orçamento e relatório direto do Android, sem instalar app de loja.</p></div>
+  </div>
+</div></section>
+
+<section id="roadmap"><div class="wrap">
+  <span class="chip">Roadmap</span>
+  <h2>Para onde o ERPsb vai</h2>
+  <p class="sub">Versão atual v1.2.1, em produção em erpsb.vercel.app.</p>
+  <div class="phase"><div class="tag">Base</div><div class="d"><strong>Núcleo de gestão</strong><span>Cadastro, vendas, cobrança PIX, dashboard semáforo e multi-tenant com RLS.</span></div></div>
+  <div class="phase"><div class="tag">Próximo</div><div class="d"><strong>Fiscal CBS/IBS</strong><span>Emissão de documento fiscal eletrônico e NFSe Nacional para a reforma tributária.</span></div></div>
+  <div class="phase"><div class="tag">Futuro</div><div class="d"><strong>WhatsApp + IA</strong><span>Cobranças e orçamentos automatizados via WhatsApp e insights de IA sobre o negócio.</span></div></div>
+</div></section>
+
+<footer>
+  <div class="wrap">
+    <div class="pill">Next.js</div><div class="pill">Prisma</div><div class="pill">PostgreSQL · Vercel</div>
+    <p style="margin-top:18px">ERPsb · ERP SaaS mobile-first para o Brasil ·
+      <a href="https://github.com/inematds/ERPsb">inematds/ERPsb</a> ·
+      <a href="https://inema.club">INEMA.CLUB</a></p>
+  </div>
+</footer>
+
+<script>
+  (function(){
+    var KEY='ERPsb-theme';
+    var b=document.body, t=document.getElementById('themeToggle');
+    if(localStorage.getItem(KEY)==='light'){ b.classList.add('light'); t.textContent='☀️'; }
+    t.addEventListener('click',function(){
+      var light=b.classList.toggle('light');
+      t.textContent=light?'☀️':'🌙';
+      localStorage.setItem(KEY, light?'light':'dark');
+    });
+  })();
+</script>
+</body>
+</html>
